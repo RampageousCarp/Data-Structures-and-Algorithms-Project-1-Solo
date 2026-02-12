@@ -1,3 +1,4 @@
-interface ITaskView{
- void Run();
-} 
+interface ITaskView
+{
+    void Run();
+}
