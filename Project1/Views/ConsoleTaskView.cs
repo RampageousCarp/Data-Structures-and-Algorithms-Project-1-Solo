@@ -1,3 +1,6 @@
+using Project1.Models;
+using Project1.Services.Interfaces;
+
 public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;

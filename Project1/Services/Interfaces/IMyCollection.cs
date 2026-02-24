@@ -1,3 +1,5 @@
+namespace Project1.Services.Interfaces;
+
 interface IMyCollection<T> {
     void Add(T item);
     void Remove(T item);
@@ -11,9 +13,4 @@ interface IMyCollection<T> {
     R Reduce<R>(R initial, Func<R, T, R> accumulator);
     IMyIterator<T> GetIterator(); // Custom Iterator - Since we are not using System.Collections.Generic
     IEnumerator<T> GetEnumerator(); // Extra foreach lookup.
-}
-interface IMyIterator<T> { 
-    bool HasNext(); // Checks if there is another element
-    T Next(); // Returns the next element
-    void Reset(); // Resets the iterator to the beginning
 }
