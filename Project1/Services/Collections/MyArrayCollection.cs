@@ -5,7 +5,7 @@ namespace Project1.Services.Collections;
 public class MyArrayCollection<T> : IMyCollection<T>
 {
     protected T[] _items;
-    protected long _count;
+    protected int _count;
     protected bool _dirty = false;
     private const long DEFAULT_CAPACITY = 256;
     
@@ -35,7 +35,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
             while (iterator.HasNext())
             {
-                if (_count == _items.LongLength)
+                if (_count == _items.Length)
                     Array.Resize(ref _items,_items.Length * 2);
 
                 _items[_count++] = iterator.Next();
@@ -44,15 +44,27 @@ public class MyArrayCollection<T> : IMyCollection<T>
     }
     public void Add(T item)
     {
-        if (_count + 1 >= _items.LongLength)
+        SetDirty();
+        if (_count + 1 >= _items.Length)
             Array.Resize(ref _items,_items.Length * 2);
 
-        _items[++_count] = item;
+        _items[_count++] = item;
     }
 
     public void Remove(T item)
     {
-        throw new NotImplementedException();
+        if (Find(item) != -1)
+        {
+            int posToDelete = Find(item);
+
+            if (posToDelete != -1)
+            {
+                if (posToDelete < _count) 
+                    Shift(posToDelete, false);
+
+                _items[_count--] = default(T)!;
+            }
+        }
     }
 
     public T FindBy<K>(K key, Func<T, K, bool> comparer)
@@ -92,4 +104,42 @@ public class MyArrayCollection<T> : IMyCollection<T>
         throw new NotImplementedException();
     }
     
+    private int Find(T item, int startIndex = 0)
+    {
+        int itemPos = -1;
+        if (startIndex > _count)
+            return -1;
+
+        for (int i = startIndex; i <= _count; i++)
+            if (_items[i]!.Equals(item))
+            {
+                itemPos = i;
+                break;
+            }
+
+        return itemPos;
+    }
+
+    private void SetDirty() => _dirty = true;
+    
+    public void Shift(int i, bool right = true)
+    {
+        if (right)
+            for (int index = _count + 1; index >= i; index--)
+                _items[index] = _items[index - 1];
+        
+        else
+            for (int index = i; index < _count; index ++)
+                _items[index] = _items[index + 1];
+    }
+
+    public void Print()
+    {
+        for (int i = 0; i < _count; i++)
+        {
+            Console.WriteLine(i + " " + _items[i]);
+        }
+    }
+    
+
 }
