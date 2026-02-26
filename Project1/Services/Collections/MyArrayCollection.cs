@@ -79,7 +79,13 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
-        throw new NotImplementedException();
+        MyArrayCollection<T> result = new MyArrayCollection<T>();
+        
+        for (int i = 0; i < _count; i++)
+            if (predicate(_items[i]))
+                result.Add(_items[i]);
+
+        return result;
     }
 
     public void Sort(Comparison<T> comparison)
