@@ -94,9 +94,17 @@ public class MyArrayCollection<T> : IMyCollection<T>
             QuickSort(0, _count, comparison);
     }
     
+    public int Count
+    {
+        get => _count;
+    }
 
-    public int Count { get; }
-    public bool Dirty { get; set; }
+    public bool Dirty
+    {
+        get => _dirty;
+        set => _dirty = value;
+    }
+    
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
         throw new NotImplementedException();
