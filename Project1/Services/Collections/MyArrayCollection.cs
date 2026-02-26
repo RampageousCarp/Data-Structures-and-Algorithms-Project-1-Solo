@@ -4,18 +4,21 @@ namespace Project1.Services.Collections;
 
 public class MyArrayCollection<T> : IMyCollection<T>
 {
-    private T[] _items;
-    private long _count;
+    protected T[] _items;
+    protected long _count;
+    protected bool _dirty = false;
     private const long DEFAULT_CAPACITY = 256;
     
     public MyArrayCollection()
     {
         _items = new T[DEFAULT_CAPACITY];
         _count = 0;
+        _dirty = false;
     }
 
     public MyArrayCollection(IMyIterator<T> iterator)
     {
+        _dirty = false;
         if (iterator is ArrayIterator<T> arrayIterator)
         {
             long itemsCount = arrayIterator.GetCount();
@@ -41,7 +44,10 @@ public class MyArrayCollection<T> : IMyCollection<T>
     }
     public void Add(T item)
     {
-        throw new NotImplementedException();
+        if (_count + 1 >= _items.LongLength)
+            Array.Resize(ref _items,_items.Length * 2);
+
+        _items[++_count] = item;
     }
 
     public void Remove(T item)
@@ -85,4 +91,5 @@ public class MyArrayCollection<T> : IMyCollection<T>
     {
         throw new NotImplementedException();
     }
+    
 }
