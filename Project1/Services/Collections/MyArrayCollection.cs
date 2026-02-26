@@ -42,6 +42,8 @@ public class MyArrayCollection<T> : IMyCollection<T>
             }
         }
     }
+
+    #region Methods
     public void Add(T item)
     {
         SetDirty();
@@ -127,14 +129,16 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     public IMyIterator<T> GetIterator()
     {
-        throw new NotImplementedException();
+        return new ArrayCollectionIterator<T>(this);
     }
 
     public IEnumerator<T> GetEnumerator()
     {
         throw new NotImplementedException();
     }
-    
+    #endregion
+
+    #region Helpers
     private int Find(T item, int startIndex = 0)
     {
         int itemPos = -1;
@@ -188,6 +192,40 @@ public class MyArrayCollection<T> : IMyCollection<T>
         (_items[i + 1], _items[high]) = (_items[high], _items[i + 1]);
         return i + 1;
     }
+    #endregion
+
+    #region InnerClass
+
+    private class ArrayCollectionIterator<T> : IMyIterator<T>
+    {
+        private readonly MyArrayCollection<T> _collection;
+        private int _currentIndex;
+        
+        public ArrayCollectionIterator(MyArrayCollection<T> collection)
+        {
+            _collection = collection;
+            _currentIndex = -1;
+        }
+        
+        public bool HasNext()
+        {
+            return _currentIndex + 1 < _collection._count;
+        }
+        
+        public T Next()
+        {
+            if (!HasNext())
+                return default(T);
+
+            return _collection._items[++_currentIndex];
+        }
+        
+        public void Reset()
+        {
+            _currentIndex = -1;
+        }
+    }
+    #endregion
 
     public void Print()
     {
