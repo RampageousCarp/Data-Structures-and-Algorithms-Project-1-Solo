@@ -90,8 +90,10 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     public void Sort(Comparison<T> comparison)
     {
-        throw new NotImplementedException();
+        if(_count > 1)
+            QuickSort(0, _count, comparison);
     }
+    
 
     public int Count { get; }
     public bool Dirty { get; set; }
@@ -133,7 +135,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     private void SetDirty() => _dirty = true;
     
-    public void Shift(int i, bool right = true)
+    private void Shift(int i, bool right = true)
     {
         if (right)
             for (int index = _count + 1; index >= i; index--)
@@ -142,6 +144,31 @@ public class MyArrayCollection<T> : IMyCollection<T>
         else
             for (int index = i; index < _count; index ++)
                 _items[index] = _items[index + 1];
+    }
+
+    private void QuickSort(int low, int high, Comparison<T> comparison)
+    {
+        if (low < high)
+        {
+            int pivotPosition = Partition(low, high, comparison);
+            QuickSort(low, pivotPosition - 1, comparison);
+            QuickSort(pivotPosition + 1, high, comparison);
+        }
+    }
+
+    private int Partition(int low, int high, Comparison<T> comparison)
+    {
+        T pivot = _items[high];
+        int i = low - 1;
+        for (int j = low; j <= high - 1; j++)
+            if (comparison(_items[j], pivot) < 0)
+            {
+                i++;
+                (_items[i], _items[j]) = (_items[j], _items[i]);
+            }
+
+        (_items[i + 1], _items[high]) = (_items[high], _items[i + 1]);
+        return i + 1;
     }
 
     public void Print()
