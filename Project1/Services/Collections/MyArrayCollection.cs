@@ -134,7 +134,8 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     public IEnumerator<T> GetEnumerator()
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < _count; i++) 
+            yield return _items[i];
     }
     #endregion
 
