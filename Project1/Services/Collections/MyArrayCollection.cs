@@ -67,9 +67,14 @@ public class MyArrayCollection<T> : IMyCollection<T>
         }
     }
 
-    public T FindBy<K>(K key, Func<T, K, bool> comparer)
+    public T? FindBy<K>(K key, Func<T, K, bool> comparer)
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < _count; i ++)
+        
+            if (comparer(_items[i], key))
+                return _items[i];
+
+        return default(T);
     }
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
