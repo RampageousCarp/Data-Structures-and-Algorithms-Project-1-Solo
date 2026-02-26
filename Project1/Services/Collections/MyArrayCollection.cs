@@ -107,12 +107,22 @@ public class MyArrayCollection<T> : IMyCollection<T>
     
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        R acc = default(R);
+
+        for (int i = 0; i < _count; i++)
+            acc = accumulator(acc, _items[i]);
+
+        return acc;
     }
 
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        R acc = initial;
+
+        for (int i = 0; i < _count; i++)
+            acc = accumulator(acc, _items[i]);
+
+        return acc;
     }
 
     public IMyIterator<T> GetIterator()
