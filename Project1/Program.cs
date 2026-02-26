@@ -12,16 +12,16 @@ class Program
         // Dependency injection: wiring up our components
         string filePath = "Repositories/JSON/tasks.json";
         ITaskRepository repository = new JsonTaskRepository(filePath);
-        
+
         TaskItem[] loadedTasks = repository.LoadTasks();
         IMyIterator<TaskItem> iterator = new ArrayIterator<TaskItem>(loadedTasks, loadedTasks.Length);
-        
-        IMyCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(iterator);
-        
+
+        MyArrayCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(iterator);
+
         ITaskService service = new TaskService(repository, taskCollection);
         ITaskView view = new ConsoleTaskView(service);
         // Run the view
-        
-        // view.Run();
+
+        view.Run();
     }
 }

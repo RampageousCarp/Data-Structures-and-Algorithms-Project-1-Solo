@@ -227,14 +227,4 @@ public class MyArrayCollection<T> : IMyCollection<T>
         }
     }
     #endregion
-
-    public void Print()
-    {
-        for (int i = 0; i < _count; i++)
-        {
-            Console.WriteLine(i + " " + _items[i]);
-        }
-    }
-    
-
 }
