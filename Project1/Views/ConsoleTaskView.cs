@@ -69,8 +69,9 @@ public class ConsoleTaskView : ITaskView
         string?[] mainMenuOptions =
         [
             "Add Task",
-            "Remove Task",
             "Toggle Task State",
+            "Remove Task",
+            "Edit Task",
             null,
             "Exit"
         ];

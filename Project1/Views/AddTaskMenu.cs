@@ -16,10 +16,9 @@ public class AddTaskMenu
     public CreateTaskInput? AddTask()
     {
         CreateTaskInput newTask = new CreateTaskInput();
-        bool keepEntering = true;
         bool dataIncomplete = false;
         
-        while (keepEntering)
+        while (true)
         {
             string?[] fieldsToEnter =
             [
@@ -62,10 +61,7 @@ public class AddTaskMenu
                 default:
                     return null;
             }
-
         }
-
-        return new CreateTaskInput();
     }
 
     private string EnterDescription()
