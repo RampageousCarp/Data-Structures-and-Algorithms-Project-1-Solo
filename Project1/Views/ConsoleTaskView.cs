@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views;
 
@@ -6,10 +7,13 @@ public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;
     private readonly ChoiceMenu<string> _menu;
+    private readonly AddTaskMenu _addTaskMenu;
+    
     public ConsoleTaskView(ITaskService service)
     {
         _service = service;
         _menu = new ChoiceMenu<string>();
+        _addTaskMenu = new AddTaskMenu(_menu);
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -33,8 +37,7 @@ public class ConsoleTaskView : ITaskView
             switch (option)
             {
                 case 0:
-                    Console.Clear();
-                    string description = Prompt("Enter task description: ");
+                    CreateTaskInput? newTask = _addTaskMenu.AddTask();
                     // _service.AddTask(description);
                     break;
                 case 1:
@@ -63,14 +66,16 @@ public class ConsoleTaskView : ITaskView
 
     private int MainMenuOption()
     {
-        string[] mainMenuOptions = new[]
-        {
+        string?[] mainMenuOptions =
+        [
             "Add Task",
             "Remove Task",
             "Toggle Task State",
+            null,
             "Exit"
-        };
-        Console.WriteLine("\nOptions:\n");
+        ];
+        
+        Console.WriteLine("\n=== Options ===\n");
         return _menu.GetChoice(mainMenuOptions);
     }
 }
