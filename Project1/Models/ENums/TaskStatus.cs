@@ -1,6 +1,6 @@
 namespace Project1.Models.ENums;
 
-public enum Status
+public enum TaskStatus
 {
     NotStarted,
     InProgress,

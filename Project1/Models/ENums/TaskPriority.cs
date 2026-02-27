@@ -1,6 +1,6 @@
 namespace Project1.Models.ENums;
 
-public enum Priority
+public enum TaskPriority
 {
     High,
     Medium,
