@@ -27,6 +27,7 @@ class JsonTaskRepository : ITaskRepository
         
         return tasks;
     }
+    
     public void SaveTasks(TaskItem[] tasks, int count)
     {
         List<TaskItem> tasksList = new List<TaskItem>();
