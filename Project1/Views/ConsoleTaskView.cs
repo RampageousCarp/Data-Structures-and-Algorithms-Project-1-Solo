@@ -1,12 +1,15 @@
 using Project1.Models;
 using Project1.Services.Interfaces;
+using Project1.Views;
 
 public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;
+    private readonly ChoiceMenu<string> _menu;
     public ConsoleTaskView(ITaskService service)
     {
         _service = service;
+        _menu = new ChoiceMenu<string>();
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -24,34 +27,31 @@ public class ConsoleTaskView : ITaskView
     {
         while (true)
         {
-            DisplayTasks(_service.GetAllTasks());
-            Console.WriteLine("\nOptions:");
-            Console.WriteLine("1. Add Task");
-            Console.WriteLine("2. Remove Task");
-            Console.WriteLine("3. Toggle Task State");
-            Console.WriteLine("4. Exit");
-            string option = Prompt("Select an option: ");
+            Console.Clear();
+            // DisplayTasks(_service.GetAllTasks());
+            int option = MainMenuOption();
             switch (option)
             {
-                case "1":
+                case 0:
+                    Console.Clear();
                     string description = Prompt("Enter task description: ");
-                    _service.AddTask(description);
+                    // _service.AddTask(description);
                     break;
-                case "2":
+                case 1:
                     string removeIdStr = Prompt("Enter task id to remove: ");
                     if (int.TryParse(removeIdStr, out int removeId))
                     {
                         _service.RemoveTask(removeId);
                     }
                     break;
-                case "3":
+                case 2:
                     string toggleIdStr = Prompt("Enter task id to toggle: ");
                     if (int.TryParse(toggleIdStr, out int toggleId))
                     {
                         _service.ToggleTaskCompletion(toggleId);
                     }
                     break;
-                case "4":
+                case 3:
                     return;
                 default:
                     Console.WriteLine("Invalid option. Press any key tocontinue...");
@@ -59,5 +59,18 @@ public class ConsoleTaskView : ITaskView
                     break;
             }
         }
+    }
+
+    private int MainMenuOption()
+    {
+        string[] mainMenuOptions = new[]
+        {
+            "Add Task",
+            "Remove Task",
+            "Toggle Task State",
+            "Exit"
+        };
+        Console.WriteLine("\nOptions:\n");
+        return _menu.GetChoice(mainMenuOptions);
     }
 }
