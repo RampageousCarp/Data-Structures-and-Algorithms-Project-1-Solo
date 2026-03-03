@@ -19,19 +19,7 @@ class TaskService : ITaskService
     
     
     // public IEnumerable<TaskItem> GetAllTasks() => _tasks;
-    // public void AddTask(string description)
-    // {
-    //     int newId = _tasks.Count > 0 ? _tasks[_tasks.Count - 1].Id + 1 : 1;
-    //     var newTask = new TaskItem
-    //     {
-    //         Id = newId,
-    //         Description =
-    //    description,
-    //         Completed = false
-    //     };
-    //     _tasks.Add(newTask);
-    //     _repository.SaveTasks(_tasks);
-    // }
+    
     // public void RemoveTask(int id)
     // {
     //     var task = _tasks.Find(t => t.Id == id);
@@ -55,6 +43,23 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
+    public TaskSummary[] LoadTasksForDisplay()
+    {
+        IMyIterator<TaskItem> tasks = _tasks.GetIterator();
+        tasks.Reset();
+
+        TaskSummary[] tasksForDisplay = new TaskSummary[_tasks.Count];
+
+        int pos = -1;
+        while (tasks.HasNext())
+        {
+            TaskItem currTask = tasks.Next();
+            tasksForDisplay[++pos] = new TaskSummary{Id = currTask.Id, Description = currTask.Description};
+        }
+
+        return tasksForDisplay;
+    }
+
     public void AddTask(CreateTaskInput taskData)
     {
         TaskItem newTask = new TaskItem 
@@ -68,17 +73,30 @@ class TaskService : ITaskService
         };
         
         _tasks.Add(newTask);
-        _repository.SaveTasks(_tasks.GetIterator(), _tasks.Count);
+        _tasks.Dirty = true;
     }
 
     public void RemoveTask(int id)
     {
-        throw new NotImplementedException();
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        if (task is not null)
+        {
+            _tasks.Remove(task);
+            _tasks.Dirty
+        }
     }
 
     public void ToggleTaskCompletion(int id)
     {
         throw new NotImplementedException();
+    }
+
+    public void SaveTasks()
+    {
+        if (_tasks.Dirty)
+            _repository.SaveTasks(_tasks.GetIterator(), _tasks.Count);
+        
+        _tasks.Dirty = false;
     }
 
     private int LoadLastId(IMyIterator<TaskItem> items)

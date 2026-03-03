@@ -6,7 +6,7 @@ namespace Project1.Models;
 
 public class TaskItem
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
     
     public required string Description { get; set; }
 

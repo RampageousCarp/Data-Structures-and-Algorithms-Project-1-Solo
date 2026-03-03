@@ -44,11 +44,10 @@ public class ConsoleTaskView : ITaskView
                         _service.AddTask(newTask);
                     break;
                 case 1:
-                    TaskItem[] tasks = new TaskItem[12];
-                    // TaskItem[] tasks = _service.GetAllTasks();
-                    TaskItem? taskToRemove = _removeTaskMenu.RemoveTask(tasks);
-                    // if (taskToRemove is not null)
-                    //     _service.RemoveTask(taskToRemove);
+                    TaskSummary[] tasksToDisplay = _service.LoadTasksForDisplay();
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(tasksToDisplay);
+                    if (taskIdToRemove != -1)
+                        _service.RemoveTask(taskIdToRemove);
                     break;
                 case 2:
                     string toggleIdStr = Prompt("Enter task id to toggle: ");

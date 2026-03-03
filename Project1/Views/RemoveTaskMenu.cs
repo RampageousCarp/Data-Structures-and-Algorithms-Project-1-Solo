@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 
 namespace Project1.Views;
@@ -12,7 +13,7 @@ public class RemoveTaskMenu
         _menu = menu;
     }
 
-    public TaskItem? RemoveTask(TaskItem[] tasks)
+    public int RemoveTask(TaskSummary[] tasks)
     {
         string[] itemsToDisplay = new String[tasks.Length + 2];
         
@@ -27,9 +28,9 @@ public class RemoveTaskMenu
 
             int taskIndexToRemove = _menu.GetChoice(itemsToDisplay, true, "=== Choose Task To Remove ===\n\n");
             if (taskIndexToRemove == itemsToDisplay.Length - 1)
-                return null;
+                return -1;
             if (ConfirmRemove(itemsToDisplay[taskIndexToRemove]))
-                return tasks[taskIndexToRemove];
+                return tasks[taskIndexToRemove].Id;
         }
     }
 
