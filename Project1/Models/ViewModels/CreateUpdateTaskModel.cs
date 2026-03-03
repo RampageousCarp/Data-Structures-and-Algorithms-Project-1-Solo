@@ -3,13 +3,13 @@ using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Models.ViewModels;
 
-public class CreateTaskInput
+public class CreateUpdateTaskModel
 {
     public string Description { get; set; }
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
     
-    public CreateTaskInput()
+    public CreateUpdateTaskModel()
     {
         Description = "";
         Priority = TaskPriority.Medium;

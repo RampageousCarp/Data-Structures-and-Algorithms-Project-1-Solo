@@ -7,15 +7,17 @@ public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;
     private readonly ChoiceMenu<string> _menu;
-    private readonly AddTaskMenu _addTaskMenu;
+    private readonly AddTaskMenu _addUpdateTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
+    private readonly UpdateTaskMenu _updateTaskMenu;
     
     public ConsoleTaskView(ITaskService service)
     {
         _service = service;
         _menu = new ChoiceMenu<string>();
-        _addTaskMenu = new AddTaskMenu(_menu);
+        _addUpdateTaskMenu = new AddTaskMenu(_menu);
         _removeTaskMenu = new RemoveTaskMenu(_menu);
+        _updateTaskMenu = new UpdateTaskMenu(_menu);
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -39,23 +41,32 @@ public class ConsoleTaskView : ITaskView
             switch (option)
             {
                 case 0:
-                    CreateTaskInput? newTask = _addTaskMenu.AddTask();
+                    CreateUpdateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
                     if (newTask is not null)
                         _service.AddTask(newTask);
                     break;
                 case 1:
-                    TaskSummary[] tasksToDisplay = _service.LoadTasksForDisplay();
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(tasksToDisplay);
+                    TaskDisplay[] tasksToDisplayDelete = _service.LoadTasksForDisplay();
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(tasksToDisplayDelete);
                     if (taskIdToRemove != -1)
                         _service.RemoveTask(taskIdToRemove);
                     break;
                 case 2:
-                    string toggleIdStr = Prompt("Enter task id to toggle: ");
-                    if (int.TryParse(toggleIdStr, out int toggleId))
+                    TaskDisplay[] tasksToDisplayUpdate = _service.LoadTasksForDisplay();
+                    (int id, CreateUpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(tasksToDisplayUpdate);
+                    
+                    if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
                     {
-                        _service.ToggleTaskCompletion(toggleId);
+                        _service.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
                     }
                     break;
+                // case 2:
+                //     string toggleIdStr = Prompt("Enter task id to toggle: ");
+                //     if (int.TryParse(toggleIdStr, out int toggleId))
+                //     {
+                //         _service.ToggleTaskCompletion(toggleId);
+                //     }
+                //     break;
                 case 3:
                     return;
                 default:
@@ -72,6 +83,7 @@ public class ConsoleTaskView : ITaskView
         [
             "Add Task",
             "Remove Task",
+            "Update Task",
             "Toggle Task State",
             "Edit Task",
             null,

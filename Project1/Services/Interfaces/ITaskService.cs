@@ -5,9 +5,10 @@ namespace Project1.Services.Interfaces;
 public interface ITaskService
 {
     IEnumerable<TaskItem> GetAllTasks();
-    TaskSummary[] LoadTasksForDisplay();
-    void AddTask(CreateTaskInput taskData);
+    TaskDisplay[] LoadTasksForDisplay();
+    void AddTask(CreateUpdateTaskModel createTaskData);
     void RemoveTask(int id);
+    void UpdateTask(int id, CreateUpdateTaskModel updateTaskData);
     void ToggleTaskCompletion(int id);
     void SaveTasks();
 }

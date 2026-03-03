@@ -13,18 +13,18 @@ public class AddTaskMenu
         _menu = menu;
     }
     
-    public CreateTaskInput? AddTask()
+    public CreateUpdateTaskModel? AddTask()
     {
-        CreateTaskInput newTask = new CreateTaskInput();
+        CreateUpdateTaskModel newUpdateTask = new CreateUpdateTaskModel();
         bool dataIncomplete = false;
         
         while (true)
         {
             string?[] fieldsToEnter =
             [
-                $"Description: {newTask.Description}",
-                $"Priority: {newTask.Priority}",
-                $"Status: {newTask.Status}",
+                $"Description: {newUpdateTask.Description}",
+                $"Priority: {newUpdateTask.Priority}",
+                $"Status: {newUpdateTask.Status}",
                 null,
                 "Add",
                 "Exit"
@@ -42,19 +42,19 @@ public class AddTaskMenu
             switch (option)
             {
                 case 0:
-                    newTask.Description = EnterDescription();
+                    newUpdateTask.Description = EnterDescription();
                     break;
                 case 1:
-                    newTask.Priority = EnterPriority();
+                    newUpdateTask.Priority = EnterPriority();
                     break;
                 case 2:
-                    newTask.Status = EnterStatus();
+                    newUpdateTask.Status = EnterStatus();
                     break;
                 case 4:
-                    if (IsDataComplete(newTask))
+                    if (IsDataComplete(newUpdateTask))
                         dataIncomplete = true;
                     else
-                        return newTask;
+                        return newUpdateTask;
                     break;
                 case 5:
                     return null;
@@ -95,8 +95,8 @@ public class AddTaskMenu
         return (TaskStatus)_menu.GetChoice(statuses);
     }
 
-    private bool IsDataComplete(CreateTaskInput newTask)
+    private bool IsDataComplete(CreateUpdateTaskModel newUpdateTask)
     {
-        return string.IsNullOrEmpty(newTask.Description);
+        return string.IsNullOrEmpty(newUpdateTask.Description);
     }
 }

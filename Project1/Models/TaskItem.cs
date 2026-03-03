@@ -11,7 +11,7 @@ public class TaskItem
     public required string Description { get; set; }
 
     [JsonPropertyName("Priority")]
-    private string _priority { get; set; } = null!;
+    public string _priority { get; set; } = TaskPriority.Medium.ToString();
 
     [JsonIgnore]
     public TaskPriority Priority
@@ -21,7 +21,7 @@ public class TaskItem
     }
 
     [JsonPropertyName("Status")]
-    private string _status = TaskStatus.NotStarted.ToString();
+    public string _status { get; set; } = TaskStatus.NotStarted.ToString();
 
     [JsonIgnore]
     public TaskStatus Status

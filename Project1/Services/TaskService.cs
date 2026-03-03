@@ -43,31 +43,31 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public TaskSummary[] LoadTasksForDisplay()
+    public TaskDisplay[] LoadTasksForDisplay()
     {
         IMyIterator<TaskItem> tasks = _tasks.GetIterator();
         tasks.Reset();
 
-        TaskSummary[] tasksForDisplay = new TaskSummary[_tasks.Count];
+        TaskDisplay[] tasksForDisplay = new TaskDisplay[_tasks.Count];
 
         int pos = -1;
         while (tasks.HasNext())
         {
             TaskItem currTask = tasks.Next();
-            tasksForDisplay[++pos] = new TaskSummary{Id = currTask.Id, Description = currTask.Description};
+            tasksForDisplay[++pos] = new TaskDisplay{Id = currTask.Id, Description = currTask.Description, Priority = currTask.Priority, Status = currTask.Status};
         }
 
         return tasksForDisplay;
     }
 
-    public void AddTask(CreateTaskInput taskData)
+    public void AddTask(CreateUpdateTaskModel createTaskData)
     {
         TaskItem newTask = new TaskItem 
         {
             Id = ++_lastId,
-            Description = taskData.Description,
-            Priority = taskData.Priority,
-            Status = taskData.Status,
+            Description = createTaskData.Description,
+            Priority = createTaskData.Priority,
+            Status = createTaskData.Status,
             Completed = false,
             CreatedAt = DateTime.UtcNow
         };
@@ -82,8 +82,26 @@ class TaskService : ITaskService
         if (task is not null)
         {
             _tasks.Remove(task);
-            _tasks.Dirty
+            _tasks.Dirty = true;
         }
+    }
+
+    public void UpdateTask(int id, CreateUpdateTaskModel updateTaskData)
+    {
+        RemoveTask(id);
+        
+        TaskItem newTask = new TaskItem 
+        {
+            Id = id,
+            Description = updateTaskData.Description,
+            Priority = updateTaskData.Priority,
+            Status = updateTaskData.Status,
+            Completed = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        _tasks.Add(newTask);
+        _tasks.Dirty = true;
     }
 
     public void ToggleTaskCompletion(int id)

@@ -35,8 +35,9 @@ public class ChoiceMenu<T>
             if (choiceIndex == i)
                 Console.BackgroundColor = ConsoleColor.Gray;
 
-            Console.WriteLine(choices[i]?.ToString());
+            Console.Write(choices[i]?.ToString());
             Console.ResetColor();
+            Console.WriteLine();
         }
         
         int newTop = Math.Max(0, Console.CursorTop - choices.Length);
