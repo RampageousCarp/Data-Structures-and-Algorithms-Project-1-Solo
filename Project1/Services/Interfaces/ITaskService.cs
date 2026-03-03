@@ -1,10 +1,15 @@
 using Project1.Models;
+using Project1.Models.ViewModels;
+using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Services.Interfaces;
 public interface ITaskService
 {
     IEnumerable<TaskItem> GetAllTasks();
-    void AddTask(string description);
+    TaskItem[] GetAllTasksSorted();
+    void AddTask(CreateTaskModel createTaskData);
     void RemoveTask(int id);
-    void ToggleTaskCompletion(int id);
+    void UpdateTask(int id, UpdateTaskModel updateTaskData);
+    void ToggleTask(int id, TaskStatus newStatus);
+    void SaveTasks();
 }

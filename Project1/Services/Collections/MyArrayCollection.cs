@@ -55,17 +55,13 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     public void Remove(T item)
     {
-        if (Find(item) != -1)
+        int posToDelete = Find(item);
+        
+        if (posToDelete != -1)
         {
-            int posToDelete = Find(item);
-
-            if (posToDelete != -1)
-            {
-                if (posToDelete < _count) 
-                    Shift(posToDelete, false);
-
-                _items[_count--] = default(T)!;
-            }
+            if (posToDelete < _count) 
+                Shift(posToDelete, false);
+            _items[-- _count] = default!;
         }
     }
 
@@ -93,13 +89,10 @@ public class MyArrayCollection<T> : IMyCollection<T>
     public void Sort(Comparison<T> comparison)
     {
         if(_count > 1)
-            QuickSort(0, _count, comparison);
+            QuickSort(0, _count -1, comparison);
     }
     
-    public int Count
-    {
-        get => _count;
-    }
+    public int Count => _count;
 
     public bool Dirty
     {
@@ -146,7 +139,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
         if (startIndex > _count)
             return -1;
 
-        for (int i = startIndex; i <= _count; i++)
+        for (int i = startIndex; i < _count; i++)
             if (_items[i]!.Equals(item))
             {
                 itemPos = i;
