@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
 
@@ -7,12 +8,16 @@ class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
     private readonly IMyCollection<TaskItem> _tasks;
+    private int _lastId = 1;
     
     public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection)
     {
         _repository = repository;
         _tasks = collection;
+        _lastId = LoadLastId(_tasks.GetIterator());
     }
+    
+    
     // public IEnumerable<TaskItem> GetAllTasks() => _tasks;
     // public void AddTask(string description)
     // {
@@ -50,9 +55,20 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public void AddTask(string description)
+    public void AddTask(CreateTaskInput taskData)
     {
-        throw new NotImplementedException();
+        TaskItem newTask = new TaskItem 
+        {
+            Id = ++_lastId,
+            Description = taskData.Description,
+            Priority = taskData.Priority,
+            Status = taskData.Status,
+            Completed = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        _tasks.Add(newTask);
+        _repository.SaveTasks(_tasks.GetIterator(), _tasks.Count);
     }
 
     public void RemoveTask(int id)
@@ -63,5 +79,19 @@ class TaskService : ITaskService
     public void ToggleTaskCompletion(int id)
     {
         throw new NotImplementedException();
+    }
+
+    private int LoadLastId(IMyIterator<TaskItem> items)
+    {
+        items.Reset();
+        int lastId = (int)items.Next().Id;
+        while (items.HasNext())
+        {
+            int currId = (int)items.Next().Id;
+            if (lastId < currId)
+                lastId = currId;
+        }
+
+        return lastId;
     }
 }

@@ -8,12 +8,14 @@ public class ConsoleTaskView : ITaskView
     private readonly ITaskService _service;
     private readonly ChoiceMenu<string> _menu;
     private readonly AddTaskMenu _addTaskMenu;
+    private readonly RemoveTaskMenu _removeTaskMenu;
     
     public ConsoleTaskView(ITaskService service)
     {
         _service = service;
         _menu = new ChoiceMenu<string>();
         _addTaskMenu = new AddTaskMenu(_menu);
+        _removeTaskMenu = new RemoveTaskMenu(_menu);
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -38,14 +40,15 @@ public class ConsoleTaskView : ITaskView
             {
                 case 0:
                     CreateTaskInput? newTask = _addTaskMenu.AddTask();
-                    // _service.AddTask(description);
+                    if (newTask is not null)
+                        _service.AddTask(newTask);
                     break;
                 case 1:
-                    string removeIdStr = Prompt("Enter task id to remove: ");
-                    if (int.TryParse(removeIdStr, out int removeId))
-                    {
-                        _service.RemoveTask(removeId);
-                    }
+                    TaskItem[] tasks = new TaskItem[12];
+                    // TaskItem[] tasks = _service.GetAllTasks();
+                    TaskItem? taskToRemove = _removeTaskMenu.RemoveTask(tasks);
+                    // if (taskToRemove is not null)
+                    //     _service.RemoveTask(taskToRemove);
                     break;
                 case 2:
                     string toggleIdStr = Prompt("Enter task id to toggle: ");
@@ -69,8 +72,8 @@ public class ConsoleTaskView : ITaskView
         string?[] mainMenuOptions =
         [
             "Add Task",
-            "Toggle Task State",
             "Remove Task",
+            "Toggle Task State",
             "Edit Task",
             null,
             "Exit"

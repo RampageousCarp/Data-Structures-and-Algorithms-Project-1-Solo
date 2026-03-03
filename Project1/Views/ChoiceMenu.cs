@@ -6,14 +6,20 @@ public class ChoiceMenu<T>
     private int _currentChoice;
     private bool _isSelected;
 
-    public int GetChoice(T?[] choices)
+    public int GetChoice(T?[] choices, bool clearScreen = false, string? title = null)
     {
         _isSelected = false;
         _currentChoice = 0;
         Console.CursorVisible = false;
+        
         PassEmptyChoices(choices, 1);
         while (!_isSelected)
         {
+            if (clearScreen)
+                Console.Clear();
+            if (title is not null)
+                Console.Write(title);
+            
             DisplayChoices(choices, _currentChoice);
             ReadKey(choices);
         }
@@ -35,6 +41,7 @@ public class ChoiceMenu<T>
         
         int newTop = Math.Max(0, Console.CursorTop - choices.Length);
         Console.SetCursorPosition(Console.CursorLeft, newTop);
+        
     }
     
     private void ReadKey(T?[] choices)
