@@ -90,6 +90,8 @@ class TaskService : ITaskService
     public void UpdateTask(int id, CreateUpdateTaskModel updateTaskData)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        if (task is null)
+            return;
 
         task.Description = updateTaskData.Description;
         task.Priority = updateTaskData.Priority;
@@ -101,6 +103,8 @@ class TaskService : ITaskService
     public void ToggleTask(int id, TaskStatus newStatus)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        if (task is null)
+            return;
         
         task.Status = newStatus;
         
@@ -118,10 +122,10 @@ class TaskService : ITaskService
     private int LoadLastId(IMyIterator<TaskItem> items)
     {
         items.Reset();
-        int lastId = (int)items.Next().Id;
+        int lastId = 0;
         while (items.HasNext())
         {
-            int currId = (int)items.Next().Id;
+            int currId = items.Next().Id;
             if (lastId < currId)
                 lastId = currId;
         }

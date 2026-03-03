@@ -15,7 +15,7 @@ public class RemoveTaskMenu
 
     public int RemoveTask(TaskDisplay[] tasks)
     {
-        string[] itemsToDisplay = new String[tasks.Length + 2];
+        string[] itemsToDisplay = new String[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
             itemsToDisplay[i] = tasks[i].ToString();

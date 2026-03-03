@@ -51,7 +51,7 @@ public class AddTaskMenu
                     newUpdateTask.Status = EnterStatus();
                     break;
                 case 4:
-                    if (IsDataComplete(newUpdateTask))
+                    if (!IsValid(newUpdateTask))
                         dataIncomplete = true;
                     else
                         return newUpdateTask;
@@ -95,8 +95,8 @@ public class AddTaskMenu
         return (TaskStatus)_menu.GetChoice(statuses);
     }
 
-    private bool IsDataComplete(CreateUpdateTaskModel newUpdateTask)
+    private bool IsValid(CreateUpdateTaskModel newUpdateTask)
     {
-        return string.IsNullOrEmpty(newUpdateTask.Description);
+        return !string.IsNullOrEmpty(newUpdateTask.Description);
     }
 }

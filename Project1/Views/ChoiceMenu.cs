@@ -2,30 +2,31 @@ namespace Project1.Views;
 
 public class ChoiceMenu<T>
 {
-    private ConsoleKeyInfo _key;
-    private int _currentChoice;
-    private bool _isSelected;
-
     public int GetChoice(T?[] choices, bool clearScreen = false, string? title = null)
     {
-        _isSelected = false;
-        _currentChoice = 0;
+        
+        bool isSelected = false;
+        int currentChoice = 0;
         Console.CursorVisible = false;
         
-        PassEmptyChoices(choices, 1);
-        while (!_isSelected)
+        PassEmptyChoices(choices, 1, currentChoice);
+        while (!isSelected)
         {
             if (clearScreen)
                 Console.Clear();
             if (title is not null)
                 Console.Write(title);
             
-            DisplayChoices(choices, _currentChoice);
-            ReadKey(choices);
+            DisplayChoices(choices, currentChoice);
+            int keyResult = ReadKey(choices, currentChoice);
+            if (keyResult == -1)
+                isSelected = true;
+            else
+                currentChoice = keyResult;
         }
 
         Console.CursorVisible = true;
-        return _currentChoice;
+        return currentChoice;
     }
     
     private void DisplayChoices(T?[] choices, int choiceIndex)
@@ -45,49 +46,55 @@ public class ChoiceMenu<T>
         
     }
     
-    private void ReadKey(T?[] choices)
+    private int ReadKey(T?[] choices, int currentChoice)
     {
-        _key = Console.ReadKey(true);
+        ConsoleKeyInfo key = Console.ReadKey(true);
 
-        switch (_key.Key)
+        switch (key.Key)
         {
             case ConsoleKey.UpArrow:
-                MoveUp(choices);
-                break;
+                return MoveUp(choices, currentChoice);
 
             case ConsoleKey.DownArrow:
-                MoveDown(choices);
-                break;
+                return MoveDown(choices, currentChoice);
 
             case ConsoleKey.Enter:
-                _isSelected = true;
-                break;
+                return -1;
+            
+            default:
+                return -1;
         }
     }
     
-    private void MoveUp(T?[] choices)
+    private int MoveUp(T?[] choices, int currentChoice)
     {
-        _currentChoice = (_currentChoice == 0) ? choices.Length - 1 : _currentChoice - 1;
-        PassEmptyChoices(choices, -1);
+        currentChoice = (currentChoice == 0) ? choices.Length - 1 : currentChoice - 1;
+        currentChoice = PassEmptyChoices(choices, -1, currentChoice);
+
+        return currentChoice;
     }
 
-    private void MoveDown(T?[] choices)
+    private int MoveDown(T?[] choices, int currentChoice)
     {
-        _currentChoice = (_currentChoice == choices.Length - 1) ? 0 : _currentChoice + 1;
-        PassEmptyChoices(choices, 1);
+        currentChoice = (currentChoice == choices.Length - 1) ? 0 : currentChoice + 1;
+        currentChoice = PassEmptyChoices(choices, 1, currentChoice);
+
+        return currentChoice;
     }
     
-    private void PassEmptyChoices(T?[] choices, int direction)
+    private int PassEmptyChoices(T?[] choices, int direction, int currentChoice)
     {
-        if (_currentChoice == choices.Length)
-            return;
+        if (currentChoice == choices.Length)
+            return currentChoice;
         
-        if (choices[_currentChoice] is null)
+        if (choices[currentChoice] is null)
         {
             if (direction > 0)
-                MoveDown(choices);
+                currentChoice = MoveDown(choices, currentChoice);
             else
-                MoveUp(choices);
+                currentChoice = MoveUp(choices, currentChoice);
         }
+
+        return currentChoice;
     }
 }
