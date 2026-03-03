@@ -93,13 +93,10 @@ public class MyArrayCollection<T> : IMyCollection<T>
     public void Sort(Comparison<T> comparison)
     {
         if(_count > 1)
-            QuickSort(0, _count, comparison);
+            QuickSort(0, _count -1, comparison);
     }
     
-    public int Count
-    {
-        get => _count;
-    }
+    public int Count => _count;
 
     public bool Dirty
     {

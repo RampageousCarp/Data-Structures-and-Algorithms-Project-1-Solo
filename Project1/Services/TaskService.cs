@@ -2,6 +2,7 @@ using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
+using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Services;
 class TaskService : ITaskService
@@ -45,6 +46,7 @@ class TaskService : ITaskService
 
     public TaskDisplay[] LoadTasksForDisplay()
     {
+        _tasks.Sort((t1, t2) => t1.Id.CompareTo(t2.Id));
         IMyIterator<TaskItem> tasks = _tasks.GetIterator();
         tasks.Reset();
 
@@ -68,7 +70,6 @@ class TaskService : ITaskService
             Description = createTaskData.Description,
             Priority = createTaskData.Priority,
             Status = createTaskData.Status,
-            Completed = false,
             CreatedAt = DateTime.UtcNow
         };
         
@@ -88,25 +89,22 @@ class TaskService : ITaskService
 
     public void UpdateTask(int id, CreateUpdateTaskModel updateTaskData)
     {
-        RemoveTask(id);
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+
+        task.Description = updateTaskData.Description;
+        task.Priority = updateTaskData.Priority;
+        task.Status = updateTaskData.Status;
         
-        TaskItem newTask = new TaskItem 
-        {
-            Id = id,
-            Description = updateTaskData.Description,
-            Priority = updateTaskData.Priority,
-            Status = updateTaskData.Status,
-            Completed = false,
-            CreatedAt = DateTime.UtcNow
-        };
-        
-        _tasks.Add(newTask);
         _tasks.Dirty = true;
     }
 
-    public void ToggleTaskCompletion(int id)
+    public void ToggleTask(int id, TaskStatus newStatus)
     {
-        throw new NotImplementedException();
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        
+        task.Status = newStatus;
+        
+        _tasks.Dirty = true;
     }
 
     public void SaveTasks()

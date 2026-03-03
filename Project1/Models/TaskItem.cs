@@ -30,7 +30,7 @@ public class TaskItem
         set => _status = value.ToString();
     }
 
-    public bool Completed { get; set; } = false;
-    
+    public bool Completed => Status == TaskStatus.Done;
+
     public DateTime CreatedAt { get; set; }
 }

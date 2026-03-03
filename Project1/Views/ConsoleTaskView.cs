@@ -2,6 +2,7 @@ using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views;
+using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 public class ConsoleTaskView : ITaskView
 {
@@ -10,6 +11,7 @@ public class ConsoleTaskView : ITaskView
     private readonly AddTaskMenu _addUpdateTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
+    private readonly ToggleTaskMenu _toggleTaskMenu;
     
     public ConsoleTaskView(ITaskService service)
     {
@@ -18,6 +20,7 @@ public class ConsoleTaskView : ITaskView
         _addUpdateTaskMenu = new AddTaskMenu(_menu);
         _removeTaskMenu = new RemoveTaskMenu(_menu);
         _updateTaskMenu = new UpdateTaskMenu(_menu);
+        _toggleTaskMenu = new ToggleTaskMenu(_menu);
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -60,19 +63,17 @@ public class ConsoleTaskView : ITaskView
                         _service.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
                     }
                     break;
-                // case 2:
-                //     string toggleIdStr = Prompt("Enter task id to toggle: ");
-                //     if (int.TryParse(toggleIdStr, out int toggleId))
-                //     {
-                //         _service.ToggleTaskCompletion(toggleId);
-                //     }
-                //     break;
                 case 3:
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Press any key tocontinue...");
-                    Console.ReadKey();
+                    TaskDisplay[] tasksToDisplayToggle = _service.LoadTasksForDisplay();
+                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(tasksToDisplayToggle);
+                    if (taskToToggle is not null && taskToToggle.Value.id != -1)
+                    {
+                        _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
+                    }
                     break;
+                
+                default:
+                    return;
             }
         }
     }
@@ -85,7 +86,6 @@ public class ConsoleTaskView : ITaskView
             "Remove Task",
             "Update Task",
             "Toggle Task State",
-            "Edit Task",
             null,
             "Exit"
         ];
