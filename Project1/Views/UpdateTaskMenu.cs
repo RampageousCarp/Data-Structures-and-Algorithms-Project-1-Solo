@@ -13,7 +13,7 @@ public class UpdateTaskMenu
         _menu = menu;
     }
     
-    public (int id, CreateUpdateTaskModel updatedTask)? UpdateTask(TaskDisplay[] tasks)
+    public (int id, UpdateTaskModel updatedTask)? UpdateTask(TaskDisplay[] tasks)
     {
         while (true)
         {
@@ -22,7 +22,7 @@ public class UpdateTaskMenu
             if (selectedIndex == -1)
                 return null;
 
-            (int id, CreateUpdateTaskModel updatedTask)? result = HandleTaskUpdate(tasks[selectedIndex]);
+            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(tasks[selectedIndex]);
             if (result.HasValue)
                 return result;
         }
@@ -43,16 +43,16 @@ public class UpdateTaskMenu
         string[] menuItems = new string[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
-            menuItems[i] = tasks[i].ToString();
+            menuItems[i] = tasks[i].ToMenuString();
 
         menuItems[^1] = "Exit";
 
         return menuItems;
     }
     
-    private (int id, CreateUpdateTaskModel updatedTask)? HandleTaskUpdate(TaskDisplay taskToUpdate)
+    private (int id, UpdateTaskModel updatedTask)? HandleTaskUpdate(TaskDisplay taskToUpdate)
     {
-        CreateUpdateTaskModel updatedTask = CreateTaskModelFromDisplay(taskToUpdate);
+        UpdateTaskModel updatedTask = CreateTaskModelFromDisplay(taskToUpdate);
         bool dataIncomplete = false;
         
         while (true)
@@ -92,7 +92,7 @@ public class UpdateTaskMenu
         }
     }
     
-    private int DisplayUpdateMenu(TaskDisplay original, CreateUpdateTaskModel updated, bool showValidationError)
+    private int DisplayUpdateMenu(TaskDisplay original, UpdateTaskModel updated, bool showValidationError)
     {
         Console.Clear();
         Console.WriteLine($"=== Update Task #{original.Id} ===\n");
@@ -113,9 +113,9 @@ public class UpdateTaskMenu
         return _menu.GetChoice(menuItems);
     }
     
-    private CreateUpdateTaskModel CreateTaskModelFromDisplay(TaskDisplay task)
+    private UpdateTaskModel CreateTaskModelFromDisplay(TaskDisplay task)
     {
-        return new CreateUpdateTaskModel
+        return new UpdateTaskModel
         {
             Description = task.Description,
             Priority = task.Priority,
@@ -154,7 +154,7 @@ public class UpdateTaskMenu
         return (TaskStatus)selectedIndex;
     }
     
-    private bool IsValid(CreateUpdateTaskModel task)
+    private bool IsValid(UpdateTaskModel task)
     {
         return !string.IsNullOrWhiteSpace(task.Description);
     }

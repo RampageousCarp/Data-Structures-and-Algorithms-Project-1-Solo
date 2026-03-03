@@ -44,19 +44,17 @@ public class ConsoleTaskView : ITaskView
             switch (option)
             {
                 case 0:
-                    CreateUpdateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
+                    CreateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
                     if (newTask is not null)
                         _service.AddTask(newTask);
                     break;
                 case 1:
-                    TaskDisplay[] tasksToDisplayDelete = _service.LoadTasksForDisplay();
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(tasksToDisplayDelete);
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(LoadAllDisplayTasks());
                     if (taskIdToRemove != -1)
                         _service.RemoveTask(taskIdToRemove);
                     break;
                 case 2:
-                    TaskDisplay[] tasksToDisplayUpdate = _service.LoadTasksForDisplay();
-                    (int id, CreateUpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(tasksToDisplayUpdate);
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(LoadAllDisplayTasks());
                     
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
                     {
@@ -64,8 +62,7 @@ public class ConsoleTaskView : ITaskView
                     }
                     break;
                 case 3:
-                    TaskDisplay[] tasksToDisplayToggle = _service.LoadTasksForDisplay();
-                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(tasksToDisplayToggle);
+                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
                     {
                         _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
@@ -92,5 +89,16 @@ public class ConsoleTaskView : ITaskView
         
         Console.WriteLine("\n=== Options ===\n");
         return _menu.GetChoice(mainMenuOptions);
+    }
+
+    private TaskDisplay[] LoadAllDisplayTasks()
+    {
+        TaskItem[] tasks = _service.GetAllTasksSorted();
+        TaskDisplay[] displayTasks = new TaskDisplay[tasks.Length];
+
+        for (int i = 0; i < tasks.Length; i++)
+            displayTasks[i] = TaskDisplay.FromTask(tasks[i]);
+
+        return displayTasks;
     }
 }

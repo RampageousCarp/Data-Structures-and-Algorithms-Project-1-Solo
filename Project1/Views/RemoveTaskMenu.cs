@@ -1,6 +1,4 @@
-using Project1.Models;
 using Project1.Models.ViewModels;
-using Project1.Services.Interfaces;
 
 namespace Project1.Views;
 
@@ -18,7 +16,7 @@ public class RemoveTaskMenu
         string[] itemsToDisplay = new String[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
-            itemsToDisplay[i] = tasks[i].ToString();
+            itemsToDisplay[i] = tasks[i].ToMenuString();
 
         itemsToDisplay[^1] = "Exit";
 

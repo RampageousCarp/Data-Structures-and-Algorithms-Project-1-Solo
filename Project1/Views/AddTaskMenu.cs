@@ -13,9 +13,9 @@ public class AddTaskMenu
         _menu = menu;
     }
     
-    public CreateUpdateTaskModel? AddTask()
+    public CreateTaskModel? AddTask()
     {
-        CreateUpdateTaskModel newUpdateTask = new CreateUpdateTaskModel();
+        CreateTaskModel newUpdateTask = new CreateTaskModel();
         bool dataIncomplete = false;
         
         while (true)
@@ -95,7 +95,7 @@ public class AddTaskMenu
         return (TaskStatus)_menu.GetChoice(statuses);
     }
 
-    private bool IsValid(CreateUpdateTaskModel newUpdateTask)
+    private bool IsValid(CreateTaskModel newUpdateTask)
     {
         return !string.IsNullOrEmpty(newUpdateTask.Description);
     }

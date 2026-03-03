@@ -44,25 +44,23 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public TaskDisplay[] LoadTasksForDisplay()
+    public TaskItem[] GetAllTasksSorted()
     {
         _tasks.Sort((t1, t2) => t1.Id.CompareTo(t2.Id));
         IMyIterator<TaskItem> tasks = _tasks.GetIterator();
         tasks.Reset();
 
-        TaskDisplay[] tasksForDisplay = new TaskDisplay[_tasks.Count];
+        TaskItem[] tasksToReturn = new TaskItem[_tasks.Count];
 
         int pos = -1;
         while (tasks.HasNext())
-        {
-            TaskItem currTask = tasks.Next();
-            tasksForDisplay[++pos] = new TaskDisplay{Id = currTask.Id, Description = currTask.Description, Priority = currTask.Priority, Status = currTask.Status};
-        }
+        
+            tasksToReturn[++pos] = tasks.Next();
 
-        return tasksForDisplay;
+        return tasksToReturn;
     }
 
-    public void AddTask(CreateUpdateTaskModel createTaskData)
+    public void AddTask(CreateTaskModel createTaskData)
     {
         TaskItem newTask = new TaskItem 
         {
@@ -87,7 +85,7 @@ class TaskService : ITaskService
         }
     }
 
-    public void UpdateTask(int id, CreateUpdateTaskModel updateTaskData)
+    public void UpdateTask(int id, UpdateTaskModel updateTaskData)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
         if (task is null)

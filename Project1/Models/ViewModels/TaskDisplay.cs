@@ -7,10 +7,18 @@ public class TaskDisplay
 {
     public int Id { get; set; }
     public string Description { get; set; } = null!;
-    public TaskPriority Priority;
-    public TaskStatus Status;
+    public TaskPriority Priority { get; set; }
+    public TaskStatus Status { get; set; }
+    
+    public static TaskDisplay FromTask(TaskItem task) => new TaskDisplay
+    {
+        Id = task.Id,
+        Description = task.Description,
+        Priority = task.Priority,
+        Status = task.Status
+    };
 
-    public override string ToString()
+    public string ToMenuString()
     {
         string display = $"#{Id} {Description}\n";
         display += $"Priority: {Priority}\n";

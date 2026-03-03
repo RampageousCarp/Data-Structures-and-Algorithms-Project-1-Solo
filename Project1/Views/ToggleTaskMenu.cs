@@ -24,7 +24,6 @@ public class ToggleTaskMenu
             TaskStatus? newStatus = HandleTaskToggle();
             if (newStatus is not null)
                 return ((int id, TaskStatus status)?)(tasks[selectedIndex].Id, newStatus);
-            
         }
     }
     
@@ -43,7 +42,7 @@ public class ToggleTaskMenu
         string[] menuItems = new string[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
-            menuItems[i] = tasks[i].ToString();
+            menuItems[i] = tasks[i].ToMenuString();
 
         menuItems[^1] = "Exit";
 
