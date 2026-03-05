@@ -20,24 +20,12 @@ public class TaskTableView
         CreatedAt = task.CreatedAt
     };
 
-    public string ToTableString()
-    {
-        string id = $"[ID: {Id}]";
-        id += new string(' ', 54 - id.Length) + "\n";
+    public string ToTableId() => $"[ID: {Id}]";
+
+    public string ToTableDescription() => $"Desc: {Description}";
         
-        string description = $"Desc: {Description}";
-        description = description.Length >= 53
-            ? description.Substring(0, 52) + "\n"
-            : description + new string(' ', 54 - description.Length) + "\n";
-
-        string priority = $"Prio: {Priority}";
-        priority += new string(' ', 54 - priority.Length) + "\n";
-
-        string created = $"Created: {CreatedAt:dd-MM-yyyy}";
-        created += new string(' ', 54 - created.Length);
-
-        string display = id + description + priority + created;
-
-        return display;
-    }
+    public string ToTablePrio() => $"Prio: {Priority}";
+    
+    public string ToTableCreated() => $"Created: {CreatedAt:dd-MM-yyyy}";
+    
 }

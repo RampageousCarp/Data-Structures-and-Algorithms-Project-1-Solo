@@ -13,6 +13,7 @@ public class ConsoleTaskView : ITaskView
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
+    private TaskFilter _filter;
     
     public ConsoleTaskView(ITaskService service)
     {
@@ -23,6 +24,8 @@ public class ConsoleTaskView : ITaskView
         _updateTaskMenu = new UpdateTaskMenu(_menu);
         _toggleTaskMenu = new ToggleTaskMenu(_menu);
         _boardDisplay = new KanbanBoardDisplay(_service);
+
+        _filter = new TaskFilter();
     }
     void DisplayTasks(IEnumerable<TaskItem> tasks)
     {
@@ -38,12 +41,11 @@ public class ConsoleTaskView : ITaskView
     }
     public void Run()
     {
-        _boardDisplay.DisplayKanbanBoard();
-        Console.ReadLine();
         while (true)
         {
             Console.Clear();
-            _boardDisplay.DisplayKanbanBoard();
+            GroupedTasks groupedTasks = _service.GetGroupedTasks(_filter);
+            _boardDisplay.DisplayKanbanBoard(groupedTasks);
             // DisplayTasks(_service.GetAllTasks());
             int option = MainMenuOption();
             switch (option)

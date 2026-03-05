@@ -7,6 +7,8 @@ public interface ITaskService
 {
     IEnumerable<TaskItem> GetAllTasks();
     TaskItem[] GetAllTasksSorted();
+    TaskItem GetTasks(TaskFilter? filter);
+    GroupedTasks GetGroupedTasks(TaskFilter? filter);
     void AddTask(CreateTaskModel createTaskData);
     void RemoveTask(int id);
     void UpdateTask(int id, UpdateTaskModel updateTaskData);
