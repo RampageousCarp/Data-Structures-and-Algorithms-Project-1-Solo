@@ -1,3 +1,4 @@
+using Project1.Models.ENums;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Models.ViewModels;
@@ -5,6 +6,36 @@ namespace Project1.Models.ViewModels;
 public class TaskFilter
 {
     public TaskStatus? Status { get; set; }
+    public TaskPriority? Priority { get; set; }
+    public DateOnly? DueToFrom { get; set; }
+    public DateOnly? DueToTo { get; set; }
+    public DateOnly? CreatedAtFrom { get; set; }
+    public DateOnly? CreatedAtTo { get; set; }
+    public string? Keyword { get; set; }
+    public SortingValue? SortBy { get; set; }
+    public bool SortAsc { get; set; } = true;
 
-    public bool IsEmpty => Status is null;
+    public bool IsEmpty =>
+        Status is null &&
+        Priority is null &&
+        DueToFrom is null &&
+        DueToTo is null &&
+        CreatedAtFrom is null &&
+        CreatedAtTo is null &&
+        Keyword is null;
+
+    public bool ApplySort =>
+        SortBy is not null;
+
+    public void ResetFilters()
+    {
+        Status = null;
+        Priority = null;
+        DueToFrom = null;
+        DueToTo = null;
+        CreatedAtFrom = null;
+        CreatedAtTo = null;
+        Keyword = null;
+        SortBy = null;
+    }
 }
