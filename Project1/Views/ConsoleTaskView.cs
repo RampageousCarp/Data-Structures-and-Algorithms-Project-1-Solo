@@ -67,11 +67,6 @@ public class ConsoleTaskView : ITaskView
                     break;
                 case 4:
                     _filtersMenu.SelectFilters();
-                    // (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
-                    // if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                    // {
-                    //     _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
-                    // }
                     break;
                 
                 default:
@@ -99,7 +94,7 @@ public class ConsoleTaskView : ITaskView
 
     private TaskDisplay[] LoadAllDisplayTasks()
     {
-        TaskItem[] tasks = _service.GetAllTasksSorted();
+        TaskItem[] tasks = _service.GetAllTasksSorted(_filters);
         TaskDisplay[] displayTasks = new TaskDisplay[tasks.Length];
 
         for (int i = 0; i < tasks.Length; i++)

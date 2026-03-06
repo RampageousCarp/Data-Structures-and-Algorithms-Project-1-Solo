@@ -25,7 +25,7 @@ public class TaskDisplay
         string display = $"#{Id} {Description}\n";
         display += $"Priority: {Priority}\n";
         display += $"Status: {Status}\n";
-        display += $"Due To: {DueTo:dd-MM-yyyy}";
+        display += $"Due To: {DueTo:dd-MM-yyyy}\n";
         
         return display;
     }
