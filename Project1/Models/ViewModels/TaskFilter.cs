@@ -13,7 +13,7 @@ public class TaskFilter
     public DateOnly? CreatedAtTo { get; set; }
     public string? Keyword { get; set; }
     public SortingValue? SortBy { get; set; }
-    public bool SortAsc { get; set; } = true;
+    public SortOrder SortOrder { get; set; } = SortOrder.Ascending;
 
     public bool IsEmpty =>
         Status is null &&
@@ -37,5 +37,6 @@ public class TaskFilter
         CreatedAtTo = null;
         Keyword = null;
         SortBy = null;
+        SortOrder = SortOrder.Ascending;
     }
 }
