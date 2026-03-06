@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ENums;
 using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
@@ -10,7 +11,7 @@ class TaskService : ITaskService
     private readonly ITaskRepository _repository;
     private readonly IMyCollection<TaskItem> _tasks;
     private readonly IMyCollectionFactory _collectionFactory;
-    private int _lastId = 1;
+    private int _lastId;
     
     public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
     {
@@ -25,13 +26,22 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public TaskItem[] GetAllTasksSorted()
+    public TaskItem[] GetAllTasksSorted(TaskFilter? filter)
     {
-        _tasks.Sort((t1, t2) => t1.Id.CompareTo(t2.Id));
-        IMyIterator<TaskItem> tasks = _tasks.GetIterator();
+        Func<TaskItem, bool> predicate = filter is null || filter.IsEmpty
+            ? _ => true
+            : BuildPredicate(filter);
+
+        IMyCollection<TaskItem> filteredCollection = _tasks.Filter(predicate);
+
+        Comparison<TaskItem> comparison = BuildComparison(filter);
+        
+        filteredCollection.Sort(comparison);
+        
+        IMyIterator<TaskItem> tasks = filteredCollection.GetIterator();
         tasks.Reset();
 
-        TaskItem[] tasksToReturn = new TaskItem[_tasks.Count];
+        TaskItem[] tasksToReturn = new TaskItem[filteredCollection.Count];
 
         int pos = -1;
         while (tasks.HasNext())
@@ -51,6 +61,8 @@ class TaskService : ITaskService
         Func<TaskItem, bool> predicate = filter is null || filter.IsEmpty
             ? _ => true
             : BuildPredicate(filter);
+        
+        Comparison<TaskItem> comparison = BuildComparison(filter);
 
         var (todo, inProgress, done) = _tasks.Reduce(
             (
@@ -80,12 +92,19 @@ class TaskService : ITaskService
                 return acc;
             }
         );
+        
+        todo.Sort(comparison);
+        inProgress.Sort(comparison);
+        done.Sort(comparison);
+        
         return new GroupedTasks
         {
             Todo = MapToTableView(todo),
             InProgress = MapToTableView(inProgress),
             Done = MapToTableView(done)
         };
+        
+        
     }
 
     public void AddTask(CreateTaskModel createTaskData)
@@ -159,19 +178,80 @@ class TaskService : ITaskService
         return lastId;
     }
     
-    private Func<TaskItem, bool> BuildPredicate(TaskFilter filter)
-    {
+     private Func<TaskItem, bool> BuildPredicate(TaskFilter filter)
+     {
         Func<TaskItem, bool> predicate = _ => true;
 
         if (filter.Status is not null)
         {
             Func<TaskItem, bool> prev = predicate;
-            TaskStatus status = filter.Status.Value;
-            predicate = task => prev(task) && task.Status == status;
+            predicate = task => prev(task) && task.Status == filter.Status;
         }
-
+        
+        if (filter.Priority is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.Priority == filter.Priority;
+        }
+        
+        if (filter.DueToFrom is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.DueTo >= filter.DueToFrom;
+        }
+        
+        if (filter.DueToTo is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.DueTo <= filter.DueToTo;
+        }
+        
+        if (filter.CreatedAtFrom is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) >= filter.CreatedAtFrom;
+        }
+        
+        if (filter.CreatedAtTo is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) <= filter.CreatedAtTo;
+        }
+        
+        if (!string.IsNullOrWhiteSpace(filter.Keyword))
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
+        }
+        
         return predicate;
-    }
+     }
+
+     private Comparison<TaskItem> BuildComparison(TaskFilter? filter)
+     {
+
+         if (filter is null || !filter.ApplySort)
+             return (t1, t2) => t1.Id.CompareTo(t2.Id);
+         
+         int order = filter.SortOrder == SortOrder.Ascending ? 1 : -1;
+
+         if (filter.SortBy == SortingValue.ID)
+             return (t1, t2) => t1.Id.CompareTo(t2.Id) * order;
+         
+         if (filter.SortBy == SortingValue.Description)
+             return (t1, t2) => String.Compare(t1.Description, t2.Description, StringComparison.Ordinal) * order;
+         
+         if (filter.SortBy == SortingValue.Priority)
+             return (t1, t2) => t1.Priority.CompareTo(t2.Priority) * order;
+         
+         if (filter.SortBy == SortingValue.CreatedAt)
+             return (t1, t2) => t1.CreatedAt.CompareTo(t2.CreatedAt) * order;
+         
+         if (filter.SortBy == SortingValue.DueTo)
+             return (t1, t2) => t1.DueTo.CompareTo(t2.DueTo) * order;
+
+         return (t1, t2) => t1.Id.CompareTo(t2.Id);
+     }
 
     private TaskTableView[] MapToTableView(IMyCollection<TaskItem> tasks)
     {

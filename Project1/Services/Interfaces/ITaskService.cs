@@ -6,7 +6,7 @@ namespace Project1.Services.Interfaces;
 public interface ITaskService
 {
     IEnumerable<TaskItem> GetAllTasks();
-    TaskItem[] GetAllTasksSorted();
+    TaskItem[] GetAllTasksSorted(TaskFilter filter);
     TaskItem GetTasks(TaskFilter? filter);
     GroupedTasks GetGroupedTasks(TaskFilter? filter);
     void AddTask(CreateTaskModel createTaskData);

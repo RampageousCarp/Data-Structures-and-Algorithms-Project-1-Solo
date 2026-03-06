@@ -9,13 +9,15 @@ public class TaskDisplay
     public string Description { get; set; } = null!;
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
+    public DateOnly DueTo { get; set; }
     
     public static TaskDisplay FromTask(TaskItem task) => new TaskDisplay
     {
         Id = task.Id,
         Description = task.Description,
         Priority = task.Priority,
-        Status = task.Status
+        Status = task.Status,
+        DueTo = task.DueTo
     };
 
     public string ToMenuString()
@@ -23,6 +25,7 @@ public class TaskDisplay
         string display = $"#{Id} {Description}\n";
         display += $"Priority: {Priority}\n";
         display += $"Status: {Status}\n";
+        display += $"Due To: {DueTo:dd-MM-yyyy}\n";
         
         return display;
     }

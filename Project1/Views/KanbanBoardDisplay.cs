@@ -5,13 +5,7 @@ namespace Project1.Views;
 
 public class KanbanBoardDisplay
 {
-    private ITaskService _service;
     private const int TABLE_WIDTH = 162;
-
-    public KanbanBoardDisplay(ITaskService service)
-    {
-        _service = service;
-    }
     
     public void DisplayKanbanBoard(GroupedTasks groupedTasks)
     {
@@ -104,8 +98,27 @@ public class KanbanBoardDisplay
             
             Console.WriteLine();
             
-            // Created at
+            // Due To
             Console.SetCursorPosition(0, rowTop + 3);
+            if (groupedTasks.Todo.Length > i)
+                DisplayTaskField(groupedTasks.Todo[i].ToTableDueTo());
+            else
+                DisplayTaskField("");
+            
+            if (groupedTasks.InProgress.Length > i)
+                DisplayTaskField(groupedTasks.InProgress[i].ToTableDueTo());
+            else
+                DisplayTaskField("");
+            
+            if (groupedTasks.Done.Length > i)
+                DisplayTaskField(groupedTasks.Done[i].ToTableDueTo());
+            else
+                DisplayTaskField("");
+            
+            Console.WriteLine();
+            
+            // Created at
+            Console.SetCursorPosition(0, rowTop + 4);
             if (groupedTasks.Todo.Length > i)
                 DisplayTaskField(groupedTasks.Todo[i].ToTableCreated());
             else
@@ -123,7 +136,7 @@ public class KanbanBoardDisplay
             
             Console.WriteLine();
 
-            Console.SetCursorPosition(0, rowTop + 4);
+            Console.SetCursorPosition(0, rowTop + 5);
             DisplayEndLine();
         }
     }

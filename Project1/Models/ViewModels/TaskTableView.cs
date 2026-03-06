@@ -10,6 +10,7 @@ public class TaskTableView
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateOnly DueTo { get; set; }
     
     public static TaskTableView FromTask(TaskItem task) => new TaskTableView
     {
@@ -17,7 +18,8 @@ public class TaskTableView
         Description = task.Description,
         Priority = task.Priority,
         Status = task.Status,
-        CreatedAt = task.CreatedAt
+        CreatedAt = task.CreatedAt,
+        DueTo = task.DueTo
     };
 
     public string ToTableId() => $"[ID: {Id}]";
@@ -27,5 +29,7 @@ public class TaskTableView
     public string ToTablePrio() => $"Prio: {Priority}";
     
     public string ToTableCreated() => $"Created: {CreatedAt:dd-MM-yyyy}";
+    
+    public string ToTableDueTo() => $"Due To: {DueTo:dd-MM-yyyy}";
     
 }

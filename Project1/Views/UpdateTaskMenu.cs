@@ -74,7 +74,11 @@ public class UpdateTaskMenu
                     updatedTask.Status = EnterStatus();
                     break;
                 
-                case 4:
+                case 3:
+                    updatedTask.DueTo = EnterDueToDate();
+                    break;
+                
+                case 5:
                     if (!IsValid(updatedTask))
                     {
                         dataIncomplete = true;
@@ -105,6 +109,7 @@ public class UpdateTaskMenu
             $"Description: {updated.Description}",
             $"Priority: {updated.Priority}",
             $"Status: {updated.Status}",
+            $"Due To: {updated.DueTo:dd-MM-yyyy}",
             null,
             "Update",
             "Exit"
@@ -152,6 +157,21 @@ public class UpdateTaskMenu
         int selectedIndex = _menu.GetChoice(statuses);
 
         return (TaskStatus)selectedIndex;
+    }
+    
+    private DateOnly EnterDueToDate()
+    {
+        
+        Console.Clear();
+        Console.WriteLine("=== Enter Due To Date ===\n");
+        Console.Write("DueTo (dd-mm-yyyy): ");
+
+        string? dateString = Console.ReadLine();
+
+        if (DateOnly.TryParseExact(dateString, "dd-MM-yyyy", out DateOnly date))
+            return date;
+        
+        return DateOnly.FromDateTime(DateTime.Now);
     }
     
     private bool IsValid(UpdateTaskModel task)

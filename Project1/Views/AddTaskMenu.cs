@@ -15,16 +15,17 @@ public class AddTaskMenu
     
     public CreateTaskModel? AddTask()
     {
-        CreateTaskModel newUpdateTask = new CreateTaskModel();
+        CreateTaskModel newCreateTask = new CreateTaskModel();
         bool dataIncomplete = false;
         
         while (true)
         {
             string?[] fieldsToEnter =
             [
-                $"Description: {newUpdateTask.Description}",
-                $"Priority: {newUpdateTask.Priority}",
-                $"Status: {newUpdateTask.Status}",
+                $"Description: {newCreateTask.Description}",
+                $"Priority: {newCreateTask.Priority}",
+                $"Status: {newCreateTask.Status}",
+                $"Due To: {newCreateTask.DueTo:dd-MM-yyyy}",
                 null,
                 "Add",
                 "Exit"
@@ -42,21 +43,24 @@ public class AddTaskMenu
             switch (option)
             {
                 case 0:
-                    newUpdateTask.Description = EnterDescription();
+                    newCreateTask.Description = EnterDescription();
                     break;
                 case 1:
-                    newUpdateTask.Priority = EnterPriority();
+                    newCreateTask.Priority = EnterPriority();
                     break;
                 case 2:
-                    newUpdateTask.Status = EnterStatus();
+                    newCreateTask.Status = EnterStatus();
                     break;
-                case 4:
-                    if (!IsValid(newUpdateTask))
-                        dataIncomplete = true;
-                    else
-                        return newUpdateTask;
+                case 3:
+                    newCreateTask.DueTo = EnterDueToDate();
                     break;
                 case 5:
+                    if (!IsValid(newCreateTask))
+                        dataIncomplete = true;
+                    else
+                        return newCreateTask;
+                    break;
+                case 6:
                     return null;
                 default:
                     return null;
@@ -94,9 +98,24 @@ public class AddTaskMenu
 
         return (TaskStatus)_menu.GetChoice(statuses);
     }
-
-    private bool IsValid(CreateTaskModel newUpdateTask)
+    
+    private DateOnly EnterDueToDate()
     {
-        return !string.IsNullOrEmpty(newUpdateTask.Description);
+        
+        Console.Clear();
+        Console.WriteLine("=== Enter Due To Date ===\n");
+        Console.Write("DueTo (dd-mm-yyyy): ");
+
+        string? dateString = Console.ReadLine();
+
+        if (DateOnly.TryParseExact(dateString, "dd-MM-yyyy", out DateOnly date))
+            return date;
+        
+        return DateOnly.FromDateTime(DateTime.Now);
+    }
+
+    private bool IsValid(CreateTaskModel newCreateTask)
+    {
+        return !string.IsNullOrEmpty(newCreateTask.Description);
     }
 }
