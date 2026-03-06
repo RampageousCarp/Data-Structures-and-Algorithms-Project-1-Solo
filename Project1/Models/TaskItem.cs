@@ -33,4 +33,5 @@ public class TaskItem
     public bool Completed => Status == TaskStatus.Done;
 
     public DateTime CreatedAt { get; set; }
+    public DateOnly DueTo { get; set; }
 }

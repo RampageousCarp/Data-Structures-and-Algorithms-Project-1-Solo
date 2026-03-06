@@ -13,19 +13,23 @@ public class ConsoleTaskView : ITaskView
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
-    private TaskFilter _filter;
+    private readonly FiltersMenu _filtersMenu;
+    
+    private TaskFilter _filters;
     
     public ConsoleTaskView(ITaskService service)
     {
         _service = service;
+        _filters = new TaskFilter();
+        
         _menu = new ChoiceMenu<string>();
         _addUpdateTaskMenu = new AddTaskMenu(_menu);
         _removeTaskMenu = new RemoveTaskMenu(_menu);
         _updateTaskMenu = new UpdateTaskMenu(_menu);
         _toggleTaskMenu = new ToggleTaskMenu(_menu);
-        _boardDisplay = new KanbanBoardDisplay(_service);
+        _boardDisplay = new KanbanBoardDisplay();
+        _filtersMenu = new FiltersMenu(_menu, _filters);
 
-        _filter = new TaskFilter();
     }
 
     public void Run()
@@ -33,7 +37,7 @@ public class ConsoleTaskView : ITaskView
         while (true)
         {
             Console.Clear();
-            GroupedTasks groupedTasks = _service.GetGroupedTasks(_filter);
+            GroupedTasks groupedTasks = _service.GetGroupedTasks(_filters);
             _boardDisplay.DisplayKanbanBoard(groupedTasks);
             int option = MainMenuOption();
             switch (option)
@@ -52,16 +56,22 @@ public class ConsoleTaskView : ITaskView
                     (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(LoadAllDisplayTasks());
                     
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                    {
                         _service.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
-                    }
+                    
                     break;
                 case 3:
                     (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                    {
                         _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
-                    }
+                    
+                    break;
+                case 4:
+                    _filtersMenu.SelectFilters();
+                    // (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
+                    // if (taskToToggle is not null && taskToToggle.Value.id != -1)
+                    // {
+                    //     _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
+                    // }
                     break;
                 
                 default:
@@ -78,6 +88,7 @@ public class ConsoleTaskView : ITaskView
             "Remove Task",
             "Update Task",
             "Toggle Task State",
+            "Apply filters",
             null,
             "Exit"
         ];

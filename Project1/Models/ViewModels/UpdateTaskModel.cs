@@ -8,11 +8,13 @@ public class UpdateTaskModel
     public string Description { get; set; }
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
+    public DateOnly DueTo { get; set; }
     
     public UpdateTaskModel()
     {
         Description = "";
         Priority = TaskPriority.Medium;
         Status = TaskStatus.NotStarted;
+        DueTo = DateOnly.FromDateTime(DateTime.Today);
     }
 }
