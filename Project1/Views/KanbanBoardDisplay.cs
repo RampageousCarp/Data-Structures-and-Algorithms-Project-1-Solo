@@ -33,7 +33,7 @@ public class KanbanBoardDisplay
         Console.WriteLine();
         Console.Write(new string(' ', 25) + "TO DO" + new string(' ', 24));
         Console.Write(new string(' ', 22) + "IN PROGRESS" + new string(' ', 21));
-        Console.Write(new string(' ', 25) + "DONE" + new string(' ', 25));
+        Console.WriteLine(new string(' ', 25) + "DONE" + new string(' ', 25));
         
         DisplayEndLine();
     }
@@ -138,6 +138,6 @@ public class KanbanBoardDisplay
 
     private void DisplayEndLine()
     {
-        Console.WriteLine("\n" + new string('-', TABLE_WIDTH));
+        Console.WriteLine(new string('-', TABLE_WIDTH - 1));
     }
 }

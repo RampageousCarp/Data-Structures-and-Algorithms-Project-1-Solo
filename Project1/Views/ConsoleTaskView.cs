@@ -27,18 +27,7 @@ public class ConsoleTaskView : ITaskView
 
         _filter = new TaskFilter();
     }
-    void DisplayTasks(IEnumerable<TaskItem> tasks)
-    {
-        Console.Clear();
-        Console.WriteLine("==== ToDo List ====");
-        foreach (var task in tasks)
-            Console.WriteLine($"{task}");
-    }
-    string Prompt(string prompt)
-    {
-        Console.Write(prompt);
-        return Console.ReadLine();
-    }
+
     public void Run()
     {
         while (true)
@@ -46,7 +35,6 @@ public class ConsoleTaskView : ITaskView
             Console.Clear();
             GroupedTasks groupedTasks = _service.GetGroupedTasks(_filter);
             _boardDisplay.DisplayKanbanBoard(groupedTasks);
-            // DisplayTasks(_service.GetAllTasks());
             int option = MainMenuOption();
             switch (option)
             {
