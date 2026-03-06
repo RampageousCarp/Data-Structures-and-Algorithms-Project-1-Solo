@@ -9,36 +9,17 @@ class TaskService : ITaskService
 {
     private readonly ITaskRepository _repository;
     private readonly IMyCollection<TaskItem> _tasks;
+    private readonly IMyCollectionFactory _collectionFactory;
     private int _lastId = 1;
     
-    public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection)
+    public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
     {
         _repository = repository;
         _tasks = collection;
+        _collectionFactory = collectionFactory;
         _lastId = LoadLastId(_tasks.GetIterator());
     }
     
-    
-    // public IEnumerable<TaskItem> GetAllTasks() => _tasks;
-    
-    // public void RemoveTask(int id)
-    // {
-    //     var task = _tasks.Find(t => t.Id == id);
-    //     if (task != null)
-    //     {
-    //         _tasks.Remove(task);
-    //         _repository.SaveTasks(_tasks);
-    //     }
-    // }
-    // public void ToggleTaskCompletion(int id)
-    // {
-    //     var task = _tasks.Find(t => t.Id == id);
-    //     if (task != null)
-    //     {
-    //         task.Completed = !task.Completed;
-    //         _repository.SaveTasks(_tasks);
-    //     }
-    // }
     public IEnumerable<TaskItem> GetAllTasks()
     {
         throw new NotImplementedException();
@@ -58,6 +39,53 @@ class TaskService : ITaskService
             tasksToReturn[++pos] = tasks.Next();
 
         return tasksToReturn;
+    }
+
+    public TaskItem GetTasks(TaskFilter? filter = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GroupedTasks GetGroupedTasks(TaskFilter? filter)
+    {
+        Func<TaskItem, bool> predicate = filter is null || filter.IsEmpty
+            ? _ => true
+            : BuildPredicate(filter);
+
+        var (todo, inProgress, done) = _tasks.Reduce(
+            (
+                Todo: _collectionFactory.Create<TaskItem>(),
+                InProgress: _collectionFactory.Create<TaskItem>(),
+                Done: _collectionFactory.Create<TaskItem>()
+            ),
+            (acc,
+                task) =>
+            {
+                if (!predicate(task))
+                    return acc;
+
+                switch (task.Status)
+                {
+                    case TaskStatus.NotStarted:
+                        acc.Todo.Add(task);
+                        break;
+                    case TaskStatus.InProgress:
+                        acc.InProgress.Add(task);
+                        break;
+                    case TaskStatus.Done:
+                        acc.Done.Add(task);
+                        break;
+                }
+
+                return acc;
+            }
+        );
+        return new GroupedTasks
+        {
+            Todo = MapToTableView(todo),
+            InProgress = MapToTableView(inProgress),
+            Done = MapToTableView(done)
+        };
     }
 
     public void AddTask(CreateTaskModel createTaskData)
@@ -129,5 +157,33 @@ class TaskService : ITaskService
         }
 
         return lastId;
+    }
+    
+    private Func<TaskItem, bool> BuildPredicate(TaskFilter filter)
+    {
+        Func<TaskItem, bool> predicate = _ => true;
+
+        if (filter.Status is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            TaskStatus status = filter.Status.Value;
+            predicate = task => prev(task) && task.Status == status;
+        }
+
+        return predicate;
+    }
+
+    private TaskTableView[] MapToTableView(IMyCollection<TaskItem> tasks)
+    {
+        TaskTableView[] taskTableViews = new TaskTableView[tasks.Count];
+        
+        IMyIterator<TaskItem> iterator = tasks.GetIterator();
+        iterator.Reset();
+
+        int pos = -1;
+        while (iterator.HasNext())
+            taskTableViews[++pos] = TaskTableView.FromTask(iterator.Next());
+
+        return taskTableViews;
     }
 }

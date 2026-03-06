@@ -7,7 +7,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
     protected T[] _items;
     protected int _count;
     protected bool _dirty = false;
-    private const long DEFAULT_CAPACITY = 256;
+    private const long DEFAULT_CAPACITY = 64;
     
     public MyArrayCollection()
     {
@@ -44,6 +44,9 @@ public class MyArrayCollection<T> : IMyCollection<T>
     }
 
     #region Methods
+
+    public IMyCollection<T> Create<T>() => new MyArrayCollection<T>();
+
     public void Add(T item)
     {
         SetDirty();
