@@ -45,7 +45,7 @@ public class AppController
 
     private void RunTaskView()
     {
-        ConsoleTaskView taskView = new ConsoleTaskView(_taskService, _session);
+        ConsoleTaskView taskView = new ConsoleTaskView(_taskService, _userService, _session);
         taskView.Run();
     }
 }
