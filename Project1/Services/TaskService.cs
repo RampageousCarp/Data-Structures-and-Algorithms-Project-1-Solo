@@ -8,12 +8,12 @@ using TaskStatus = Project1.Models.ENums.TaskStatus;
 namespace Project1.Services;
 class TaskService : ITaskService
 {
-    private readonly ITaskRepository _repository;
+    private readonly IGenericRepository<TaskItem> _repository;
     private readonly IMyCollection<TaskItem> _tasks;
     private readonly IMyCollectionFactory _collectionFactory;
     private int _lastId;
     
-    public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
+    public TaskService(IGenericRepository<TaskItem> repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
     {
         _repository = repository;
         _tasks = collection;
@@ -159,7 +159,7 @@ class TaskService : ITaskService
     public void SaveTasks()
     {
         if (_tasks.Dirty)
-            _repository.SaveTasks(_tasks.GetIterator(), _tasks.Count);
+            _repository.SaveItems(_tasks.GetIterator(), _tasks.Count);
         
         _tasks.Dirty = false;
     }
