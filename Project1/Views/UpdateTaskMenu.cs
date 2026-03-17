@@ -8,9 +8,9 @@ public class UpdateTaskMenu
 {
     private readonly ChoiceMenu<string> _menu;
 
-    public UpdateTaskMenu(ChoiceMenu<string> menu)
+    public UpdateTaskMenu()
     {
-        _menu = menu;
+        _menu = new ChoiceMenu<string>();
     }
     
     public (int id, UpdateTaskModel updatedTask)? UpdateTask(TaskDisplay[] tasks)

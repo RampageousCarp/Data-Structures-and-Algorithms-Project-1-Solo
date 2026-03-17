@@ -8,9 +8,9 @@ public class FiltersMenu
     private readonly ChoiceMenu<string> _menu;
     private TaskFilter _filters;
     
-    public FiltersMenu(ChoiceMenu<string> menu, TaskFilter filters)
+    public FiltersMenu(TaskFilter filters)
     {
-        _menu = menu;
+        _menu = new ChoiceMenu<string>();
         _filters = filters;
     }
 

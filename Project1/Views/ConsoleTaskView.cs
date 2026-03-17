@@ -7,6 +7,7 @@ using TaskStatus = Project1.Models.ENums.TaskStatus;
 public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _service;
+    private readonly Session _session;
     private readonly ChoiceMenu<string> _menu;
     private readonly AddTaskMenu _addUpdateTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
@@ -17,18 +18,19 @@ public class ConsoleTaskView : ITaskView
     
     private TaskFilter _filters;
     
-    public ConsoleTaskView(ITaskService service)
+    public ConsoleTaskView(ITaskService service, Session session)
     {
         _service = service;
+        _session = session;
         _filters = new TaskFilter();
         
         _menu = new ChoiceMenu<string>();
-        _addUpdateTaskMenu = new AddTaskMenu(_menu);
-        _removeTaskMenu = new RemoveTaskMenu(_menu);
-        _updateTaskMenu = new UpdateTaskMenu(_menu);
-        _toggleTaskMenu = new ToggleTaskMenu(_menu);
+        _addUpdateTaskMenu = new AddTaskMenu();
+        _removeTaskMenu = new RemoveTaskMenu();
+        _updateTaskMenu = new UpdateTaskMenu();
+        _toggleTaskMenu = new ToggleTaskMenu();
         _boardDisplay = new KanbanBoardDisplay();
-        _filtersMenu = new FiltersMenu(_menu, _filters);
+        _filtersMenu = new FiltersMenu(_filters);
 
     }
 

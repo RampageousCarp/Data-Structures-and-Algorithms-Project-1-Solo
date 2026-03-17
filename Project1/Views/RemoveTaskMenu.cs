@@ -6,9 +6,9 @@ public class RemoveTaskMenu
 {
     private ChoiceMenu<string> _menu;
     
-    public RemoveTaskMenu(ChoiceMenu<string> menu)
+    public RemoveTaskMenu()
     {
-        _menu = menu;
+        _menu = new ChoiceMenu<string>();
     }
 
     public int RemoveTask(TaskDisplay[] tasks)

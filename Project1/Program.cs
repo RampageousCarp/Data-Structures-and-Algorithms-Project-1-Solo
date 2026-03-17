@@ -1,4 +1,5 @@
-﻿using Project1.Models;
+﻿using Project1;
+using Project1.Models;
 using Project1.Repositories;
 using Project1.Repositories.Interfaces;
 using Project1.Services;
@@ -11,19 +12,29 @@ class Program
     static void Main(string[] args)
     {
         // Dependency injection: wiring up our components
-        string filePath = "Repositories/JSON/tasks.json";
-        IGenericRepository<TaskItem> repository = new JsonGenericRepository<TaskItem>(filePath);
-
-        TaskItem[] loadedTasks = repository.LoadItems();
-        IMyIterator<TaskItem> iterator = new ArrayIterator<TaskItem>(loadedTasks, loadedTasks.Length);
-
-        MyArrayCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(iterator);
+        Session session = new Session();
         IMyCollectionFactory collectionFactory = new MyArrayCollectionFactory();
+        
+        string usersFilePath = "Repositories/JSON/users.json";
+        IGenericRepository<User> usersRepository = new JsonGenericRepository<User>(usersFilePath);
+        User[] loadedUsers = usersRepository.LoadItems();
+        IMyIterator<User> usersIterator = new ArrayIterator<User>(loadedUsers, loadedUsers.Length);
+        IMyCollection<User> usersCollection = new MyArrayCollection<User>(usersIterator);
+        
+        IUserService userService = new UserService(usersRepository, usersCollection, collectionFactory);
+        
+        
+        string tasksFilePath = "Repositories/JSON/tasks.json";
+        IGenericRepository<TaskItem> tasksRepository = new JsonGenericRepository<TaskItem>(tasksFilePath);
+        
+        TaskItem[] loadedTasks = tasksRepository.LoadItems();
+        IMyIterator<TaskItem> tasksIterator = new ArrayIterator<TaskItem>(loadedTasks, loadedTasks.Length);
+        IMyCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(tasksIterator);
+        
+        ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory);
 
-        ITaskService service = new TaskService(repository, taskCollection, collectionFactory);
-        ITaskView view = new ConsoleTaskView(service);
         // Run the view
-
-        view.Run();
+        AppController controller = new AppController(session, userService, taskService);
+        controller.Run();
     }
 }

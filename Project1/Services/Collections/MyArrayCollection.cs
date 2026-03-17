@@ -127,12 +127,6 @@ public class MyArrayCollection<T> : IMyCollection<T>
     {
         return new ArrayCollectionIterator<T>(this);
     }
-
-    public IEnumerator<T> GetEnumerator()
-    {
-        for (int i = 0; i < _count; i++) 
-            yield return _items[i];
-    }
     #endregion
 
     #region Helpers

@@ -4,7 +4,7 @@ using Project1.Services.Interfaces;
 
 namespace Project1.Repositories;
 
-class JsonGenericRepository<T> : IGenericRepository<T>
+public class JsonGenericRepository<T> : IGenericRepository<T>
 {
     private readonly string _filePath;
     public JsonGenericRepository(string filePath) => _filePath = filePath;

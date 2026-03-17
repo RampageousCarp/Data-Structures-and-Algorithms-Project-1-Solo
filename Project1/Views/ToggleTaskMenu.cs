@@ -7,9 +7,9 @@ public class ToggleTaskMenu
 {
     private readonly ChoiceMenu<string> _menu;
 
-    public ToggleTaskMenu(ChoiceMenu<string> menu)
+    public ToggleTaskMenu()
     {
-        _menu = menu;
+        _menu = new ChoiceMenu<string>();
     }
 
     public (int id, TaskStatus status)? ToggleTask(TaskDisplay[] tasks)

@@ -8,9 +8,9 @@ public class AddTaskMenu
 {
     private readonly ChoiceMenu<string> _menu;
 
-    public AddTaskMenu(ChoiceMenu<string> menu)
+    public AddTaskMenu()
     {
-        _menu = menu;
+        _menu = new ChoiceMenu<string>();
     }
     
     public CreateTaskModel? AddTask()
