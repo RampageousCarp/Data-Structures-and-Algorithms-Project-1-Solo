@@ -19,6 +19,10 @@ public class ChoiceMenu<T>
             
             DisplayChoices(choices, currentChoice);
             int keyResult = ReadKey(choices, currentChoice);
+            
+            if (keyResult == -2)
+                continue;
+            
             if (keyResult == -1)
                 isSelected = true;
             else
@@ -62,7 +66,7 @@ public class ChoiceMenu<T>
                 return -1;
             
             default:
-                return -1;
+                return -2;
         }
     }
     

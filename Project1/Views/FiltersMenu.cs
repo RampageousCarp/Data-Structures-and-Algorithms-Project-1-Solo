@@ -42,7 +42,7 @@ public class FiltersMenu
                         break;
                    
                     _filters.CreatedAtFrom = creationDateFilter.Value.from;
-                    _filters.CreatedAtFrom = creationDateFilter.Value.to;
+                    _filters.CreatedAtTo = creationDateFilter.Value.to;
                     
                     break;
                 case 3:

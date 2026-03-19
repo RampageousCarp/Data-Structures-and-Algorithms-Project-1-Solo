@@ -45,6 +45,8 @@ public class ConsoleTaskView : ITaskView
             Console.Clear();
             GroupedTasks groupedTasks = _taskService.GetGroupedTasks(_filters);
             _boardDisplay.DisplayKanbanBoard(groupedTasks);
+            DisplayActiveFilters();
+                
             int option = MainMenuOption();
             switch (option)
             {
@@ -81,7 +83,8 @@ public class ConsoleTaskView : ITaskView
                     break;
                 
                 default:
-                    return;
+                    Environment.Exit(0);
+                    break;
             }
         }
     }
@@ -102,6 +105,48 @@ public class ConsoleTaskView : ITaskView
         
         Console.WriteLine("\n=== Options ===\n");
         return _menu.GetChoice(mainMenuOptions);
+    }
+
+    private void DisplayActiveFilters()
+    {
+        if (_filters.IsEmpty)
+            return;
+        
+        Console.WriteLine("\n=== Active filters ===");
+        
+        if (_filters.Priority is not null)
+            Console.WriteLine($"Priority    : {_filters.Priority}");
+        if (_filters.DueToFrom is not null || _filters.DueToTo is not null)
+        {
+            string dueToFilter = "";
+
+            if (_filters.DueToFrom is not null)
+                dueToFilter += $"From: {_filters.DueToFrom:dd-MM-yyyy} ";
+        
+            if(_filters.DueToTo is not null)
+                dueToFilter += $"To: {_filters.DueToTo:dd-MM-yyyy}";
+
+            Console.WriteLine($"Due Date    : {dueToFilter}");
+        }
+        
+        if (_filters.CreatedAtFrom is not null || _filters.CreatedAtTo is not null)
+        {
+            string createdAtFilter = "";
+
+            if (_filters.CreatedAtFrom is not null)
+                createdAtFilter += $"From: {_filters.CreatedAtFrom:dd-MM-yyyy} ";
+        
+            if(_filters.CreatedAtTo is not null)
+                createdAtFilter += $"To: {_filters.CreatedAtTo:dd-MM-yyyy}";
+
+            Console.WriteLine($"Created at  : {createdAtFilter}");
+        }
+        
+        if (!string.IsNullOrEmpty(_filters.Keyword))
+            Console.WriteLine($"Keyword     : \"{_filters.Keyword}\"");
+        
+        if (_filters.ApplySort)
+            Console.WriteLine($"Sort        : {_filters.SortBy} ({_filters.SortOrder})");
     }
 
     private TaskDisplay[] LoadAllDisplayTasks()
