@@ -66,10 +66,10 @@ public class ConsoleTaskView : ITaskView
                         _taskService.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
                     
                     break;
-                // case 3:
-                //     (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
-                //     if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                //         _taskService.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
+                case 3:
+                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
+                    if (taskToToggle is not null && taskToToggle.Value.id != -1)
+                        _taskService.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
                     
                     break;
                 case 4:
