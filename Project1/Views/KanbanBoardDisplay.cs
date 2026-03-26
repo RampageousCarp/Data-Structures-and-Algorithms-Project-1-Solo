@@ -49,10 +49,6 @@ public class KanbanBoardDisplay
         IMyIterator<TaskItem> inProgressIt = groupedTasks.InProgress.GetIterator();
         IMyIterator<TaskItem> doneIt = groupedTasks.Done.GetIterator();
  
-        int maxLength = groupedTasks.Todo.Count;
-        if (groupedTasks.InProgress.Count > maxLength) maxLength = groupedTasks.InProgress.Count;
-        if (groupedTasks.Done.Count > maxLength) maxLength = groupedTasks.Done.Count;
- 
         while(todoIt.HasNext() || inProgressIt.HasNext() || doneIt.HasNext())
         {
             TaskItem? todo = todoIt.HasNext() ? todoIt.Next() : null;
