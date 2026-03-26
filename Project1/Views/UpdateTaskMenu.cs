@@ -1,5 +1,7 @@
+using Project1.Models;
 using Project1.Models.ENums;
 using Project1.Models.ViewModels;
+using Project1.Services.Interfaces;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Views;
@@ -13,42 +15,33 @@ public class UpdateTaskMenu
         _menu = new ChoiceMenu();
     }
     
-    public (int id, UpdateTaskModel updatedTask)? UpdateTask(TaskDisplay[] tasks)
+    public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks)
     {
+        MenuOption<TaskItem>[] itemsToDisplay = new MenuOption<TaskItem>[tasks.Count + 1];
+
+        IMyIterator<TaskItem> iterator = tasks.GetIterator();
+        int p = 0;
+        while (iterator.HasNext())
+        {
+            TaskItem task = iterator.Next();
+            itemsToDisplay[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
+        }
+        
+        itemsToDisplay[^1] = new MenuOption<TaskItem>("Exit");
+
         while (true)
         {
-            int selectedIndex = DisplayTaskSelectionMenu(tasks);
-            
-            if (selectedIndex == -1)
-                return null;
+            Console.Clear();
 
-            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(tasks[selectedIndex]);
+            int taskIndexToRemove = _menu.GetChoice(itemsToDisplay, true, "=== Choose Task To Update ===\n\n");
+            if (itemsToDisplay[taskIndexToRemove].IsAction)
+                return null;
+            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(itemsToDisplay[taskIndexToRemove].Value!.ConvertTo<TaskDisplay>());
             if (result.HasValue)
                 return result;
         }
     }
     
-    private int DisplayTaskSelectionMenu(TaskDisplay[] tasks)
-    {
-        Console.Clear();
-
-        string[] menuItems = BuildTaskSelectionMenuItems(tasks);
-        int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Task To Update ===\n\n");
-
-        return selectedIndex == menuItems.Length - 1 ? -1 : selectedIndex;
-    }
-    
-    private string[] BuildTaskSelectionMenuItems(TaskDisplay[] tasks)
-    {
-        string[] menuItems = new string[tasks.Length + 1];
-        
-        for (int i = 0; i < tasks.Length; i++)
-            menuItems[i] = tasks[i].ToString();
-
-        menuItems[^1] = "Exit";
-
-        return menuItems;
-    }
     
     private (int id, UpdateTaskModel updatedTask)? HandleTaskUpdate(TaskDisplay taskToUpdate)
     {

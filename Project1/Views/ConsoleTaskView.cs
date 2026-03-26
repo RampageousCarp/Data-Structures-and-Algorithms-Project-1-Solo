@@ -59,13 +59,13 @@ public class ConsoleTaskView : ITaskView
                     if (taskIdToRemove != -1)
                         _taskService.RemoveTask(taskIdToRemove);
                     break;
-                // case 2:
-                //     (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered());
-                //     
-                //     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                //         _taskService.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
-                //     
-                //     break;
+                case 2:
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered());
+                    
+                    if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
+                        _taskService.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
+                    
+                    break;
                 // case 3:
                 //     (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
                 //     if (taskToToggle is not null && taskToToggle.Value.id != -1)
