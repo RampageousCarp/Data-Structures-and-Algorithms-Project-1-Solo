@@ -1,6 +1,5 @@
 using Project1.Models;
 using Project1.Models.ENums;
-using Project1.Models.Interfaces;
 using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
@@ -21,11 +20,6 @@ class TaskService : ITaskService
         _collectionFactory = collectionFactory;
         _lastId = LoadLastId(_tasks.GetIterator());
     }
-    
-    public IEnumerable<TaskItem> GetAllTasks()
-    {
-        throw new NotImplementedException();
-    }
 
     public IMyCollection<TaskItem> GetAllTasksWithFilter(TaskFilter? filter)
     {
@@ -40,23 +34,6 @@ class TaskService : ITaskService
         filteredCollection.Sort(comparison);
 
         return filteredCollection;
-        
-        // IMyIterator<TaskItem> tasks = filteredCollection.GetIterator();
-        // tasks.Reset();
-        //
-        // TaskItem[] tasksToReturn = new TaskItem[filteredCollection.Count];
-        //
-        // int pos = -1;
-        // while (tasks.HasNext())
-        //
-        //     tasksToReturn[++pos] = tasks.Next();
-        //
-        // return tasksToReturn;
-    }
-
-    public TaskItem GetTasks(TaskFilter? filter = null)
-    {
-        throw new NotImplementedException();
     }
 
     public GroupedTasks GetGroupedTasks(TaskFilter? filter)
@@ -99,15 +76,9 @@ class TaskService : ITaskService
         todo.Sort(comparison);
         inProgress.Sort(comparison);
         done.Sort(comparison);
-        
-        return new GroupedTasks
-        {
-            Todo = MapToTableView(todo),
-            InProgress = MapToTableView(inProgress),
-            Done = MapToTableView(done)
-        };
-        
-        
+
+        return new GroupedTasks(todo, inProgress, done);
+
     }
 
     public void AddTask(CreateTaskModel createTaskData)
@@ -255,18 +226,5 @@ class TaskService : ITaskService
 
          return (t1, t2) => t1.Id.CompareTo(t2.Id);
      }
-
-    private TaskTableView[] MapToTableView(IMyCollection<TaskItem> tasks)
-    {
-        TaskTableView[] taskTableViews = new TaskTableView[tasks.Count];
-        
-        IMyIterator<TaskItem> iterator = tasks.GetIterator();
-        iterator.Reset();
-
-        int pos = -1;
-        while (iterator.HasNext())
-            taskTableViews[++pos] = TaskTableView.FromTask(iterator.Next());
-
-        return taskTableViews;
-    }
+    
 }
