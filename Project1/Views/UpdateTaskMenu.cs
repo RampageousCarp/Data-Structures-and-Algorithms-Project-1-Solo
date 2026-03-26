@@ -6,11 +6,11 @@ namespace Project1.Views;
 
 public class UpdateTaskMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
 
     public UpdateTaskMenu()
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
     }
     
     public (int id, UpdateTaskModel updatedTask)? UpdateTask(TaskDisplay[] tasks)
@@ -43,7 +43,7 @@ public class UpdateTaskMenu
         string[] menuItems = new string[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
-            menuItems[i] = tasks[i].ToMenuString();
+            menuItems[i] = tasks[i].ToString();
 
         menuItems[^1] = "Exit";
 

@@ -5,12 +5,12 @@ namespace Project1.Views;
 
 public class FiltersMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
     private TaskFilter _filters;
     
     public FiltersMenu(TaskFilter filters)
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
         _filters = filters;
     }
 

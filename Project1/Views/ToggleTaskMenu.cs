@@ -5,11 +5,11 @@ namespace Project1.Views;
 
 public class ToggleTaskMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
 
     public ToggleTaskMenu()
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
     }
 
     public (int id, TaskStatus status)? ToggleTask(TaskDisplay[] tasks)
@@ -42,7 +42,7 @@ public class ToggleTaskMenu
         string[] menuItems = new string[tasks.Length + 1];
         
         for (int i = 0; i < tasks.Length; i++)
-            menuItems[i] = tasks[i].ToMenuString();
+            menuItems[i] = tasks[i].ToString();
 
         menuItems[^1] = "Exit";
 

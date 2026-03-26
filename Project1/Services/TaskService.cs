@@ -1,5 +1,6 @@
 using Project1.Models;
 using Project1.Models.ENums;
+using Project1.Models.Interfaces;
 using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
@@ -26,7 +27,7 @@ class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public TaskItem[] GetAllTasksSorted(TaskFilter? filter)
+    public IMyCollection<TaskItem> GetAllTasksWithFilter(TaskFilter? filter)
     {
         Func<TaskItem, bool> predicate = filter is null || filter.IsEmpty
             ? _ => true
@@ -37,18 +38,20 @@ class TaskService : ITaskService
         Comparison<TaskItem> comparison = BuildComparison(filter);
         
         filteredCollection.Sort(comparison);
+
+        return filteredCollection;
         
-        IMyIterator<TaskItem> tasks = filteredCollection.GetIterator();
-        tasks.Reset();
-
-        TaskItem[] tasksToReturn = new TaskItem[filteredCollection.Count];
-
-        int pos = -1;
-        while (tasks.HasNext())
-        
-            tasksToReturn[++pos] = tasks.Next();
-
-        return tasksToReturn;
+        // IMyIterator<TaskItem> tasks = filteredCollection.GetIterator();
+        // tasks.Reset();
+        //
+        // TaskItem[] tasksToReturn = new TaskItem[filteredCollection.Count];
+        //
+        // int pos = -1;
+        // while (tasks.HasNext())
+        //
+        //     tasksToReturn[++pos] = tasks.Next();
+        //
+        // return tasksToReturn;
     }
 
     public TaskItem GetTasks(TaskFilter? filter = null)

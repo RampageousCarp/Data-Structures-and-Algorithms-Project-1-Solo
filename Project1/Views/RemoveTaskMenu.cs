@@ -1,34 +1,41 @@
+using Project1.Models;
 using Project1.Models.ViewModels;
+using Project1.Services.Interfaces;
 
 namespace Project1.Views;
 
 public class RemoveTaskMenu
 {
-    private ChoiceMenu<string> _menu;
+    private ChoiceMenu _menu;
     
     public RemoveTaskMenu()
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
     }
 
-    public int RemoveTask(TaskDisplay[] tasks)
+    public int RemoveTask(IMyCollection<TaskItem> tasks)
     {
-        string[] itemsToDisplay = new String[tasks.Length + 1];
-        
-        for (int i = 0; i < tasks.Length; i++)
-            itemsToDisplay[i] = tasks[i].ToMenuString();
+        MenuOption<TaskItem>[] itemsToDisplay = new MenuOption<TaskItem>[tasks.Count + 1];
 
-        itemsToDisplay[^1] = "Exit";
+        IMyIterator<TaskItem> iterator = tasks.GetIterator();
+        int p = 0;
+        while (iterator.HasNext())
+        {
+            TaskItem task = iterator.Next();
+            itemsToDisplay[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
+        }
+        
+        itemsToDisplay[^1] = new MenuOption<TaskItem>("Exit");
 
         while (true)
         {
             Console.Clear();
 
             int taskIndexToRemove = _menu.GetChoice(itemsToDisplay, true, "=== Choose Task To Remove ===\n\n");
-            if (taskIndexToRemove == itemsToDisplay.Length - 1)
+            if (itemsToDisplay[taskIndexToRemove].IsAction)
                 return -1;
-            if (ConfirmRemove(tasks[taskIndexToRemove]))
-                return tasks[taskIndexToRemove].Id;
+            if (ConfirmRemove(itemsToDisplay[taskIndexToRemove].Value!.ConvertTo<TaskDisplay>()))
+                return itemsToDisplay[taskIndexToRemove].Value!.Id;
         }
     }
 
