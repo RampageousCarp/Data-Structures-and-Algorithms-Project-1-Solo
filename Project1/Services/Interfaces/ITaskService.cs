@@ -6,9 +6,7 @@ using TaskStatus = Project1.Models.ENums.TaskStatus;
 namespace Project1.Services.Interfaces;
 public interface ITaskService
 {
-    IEnumerable<TaskItem> GetAllTasks();
     IMyCollection<TaskItem> GetAllTasksWithFilter(TaskFilter filter);
-    TaskItem GetTasks(TaskFilter? filter);
     GroupedTasks GetGroupedTasks(TaskFilter? filter);
     void AddTask(CreateTaskModel createTaskData);
     void RemoveTask(int id);

@@ -15,31 +15,48 @@ public class UpdateTaskMenu
         _menu = new ChoiceMenu();
     }
     
+    
     public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks)
     {
-        MenuOption<TaskItem>[] itemsToDisplay = new MenuOption<TaskItem>[tasks.Count + 1];
+        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
+        
+        while (true)
+        {
+            int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+            
+            if (menuItems[selectedIndex].IsAction)
+                return null;
 
+            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(menuItems[selectedIndex].Value!.ConvertTo<TaskDisplay>());
+            if (result.HasValue)
+                return result;
+        }
+    }
+    
+    private int DisplayTaskSelectionMenu(MenuOption<TaskItem>[] menuItems)
+    {
+        Console.Clear();
+
+        int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Task To Update ===\n\n");
+
+        return selectedIndex;
+    }
+    
+    private MenuOption<TaskItem>[] BuildTaskSelectionMenuItems(IMyCollection<TaskItem> tasks)
+    {
+        MenuOption<TaskItem>[] menuItems = new MenuOption<TaskItem>[tasks.Count + 1];
+        
         IMyIterator<TaskItem> iterator = tasks.GetIterator();
         int p = 0;
         while (iterator.HasNext())
         {
             TaskItem task = iterator.Next();
-            itemsToDisplay[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
+            menuItems[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
         }
         
-        itemsToDisplay[^1] = new MenuOption<TaskItem>("Exit");
+        menuItems[^1] = new MenuOption<TaskItem>("Exit");
 
-        while (true)
-        {
-            Console.Clear();
-
-            int taskIndexToRemove = _menu.GetChoice(itemsToDisplay, true, "=== Choose Task To Update ===\n\n");
-            if (itemsToDisplay[taskIndexToRemove].IsAction)
-                return null;
-            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(itemsToDisplay[taskIndexToRemove].Value!.ConvertTo<TaskDisplay>());
-            if (result.HasValue)
-                return result;
-        }
+        return menuItems;
     }
     
     
