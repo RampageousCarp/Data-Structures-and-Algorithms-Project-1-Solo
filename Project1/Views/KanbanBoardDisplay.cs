@@ -6,17 +6,26 @@ namespace Project1.Views;
 
 public class KanbanBoardDisplay
 {
+    private readonly IUserService _userService;
+    private readonly Func<TaskItem, string>[] _fieldExtractors;
+    
     private const int TABLE_WIDTH = 162;
     private const int COLUMN_WIDTH = 54;
-    
-    private static readonly Func<TaskItem, string>[] _fieldExtractors =
-    [
-        t => t.ConvertTo<TaskTableView>().ToTableId(),
-        t => t.ConvertTo<TaskTableView>().ToTableDescription(),
-        t => t.ConvertTo<TaskTableView>().ToTablePrio(),
-        t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
-        t => t.ConvertTo<TaskTableView>().ToTableCreated(),
-    ];
+
+    public KanbanBoardDisplay(IUserService userService)
+    {
+        _userService = userService;
+        
+        _fieldExtractors = new Func<TaskItem, string>[]
+        {
+            t => t.ConvertTo<TaskTableView>().ToTableId(),
+            t => t.ConvertTo<TaskTableView>().ToTableDescription(),
+            t => t.ConvertTo<TaskTableView>().ToTablePrio(),
+            t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
+            t => t.ConvertTo<TaskTableView>().ToTableCreated(),
+            t => GetAssigneeString(_userService.GetUserById(t.Id))
+        };
+    }
     
     public void DisplayKanbanBoard(GroupedTasks groupedTasks)
     {
@@ -82,5 +91,10 @@ public class KanbanBoardDisplay
     private void DisplayEndLine()
     {
         Console.WriteLine(new string('-', TABLE_WIDTH - 1));
+    }
+
+    private string GetAssigneeString(User? user)
+    {
+        return $"Assigned to: {(user is null ? "Unassigned" : user.Username)}";
     }
 }

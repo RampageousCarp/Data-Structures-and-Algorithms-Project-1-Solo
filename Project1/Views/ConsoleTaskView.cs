@@ -32,7 +32,7 @@ public class ConsoleTaskView : ITaskView
         _removeTaskMenu = new RemoveTaskMenu();
         _updateTaskMenu = new UpdateTaskMenu();
         _toggleTaskMenu = new ToggleTaskMenu();
-        _boardDisplay = new KanbanBoardDisplay();
+        _boardDisplay = new KanbanBoardDisplay(_userService);
         _filtersMenu = new FiltersMenu(_filters);
         _userSelectionView = new UserSelectionView(_userService);
     }
