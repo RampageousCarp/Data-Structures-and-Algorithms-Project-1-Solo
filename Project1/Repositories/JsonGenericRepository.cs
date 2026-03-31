@@ -16,14 +16,7 @@ public class JsonGenericRepository<T> : IGenericRepository<T>
 
         string json = File.ReadAllText(_filePath);
 
-        var itemsList = JsonSerializer.Deserialize<List<T>>(json);
-
-        if (itemsList == null || itemsList.Count == 0)
-            return new T[0];
-
-        T[] items = new T[itemsList.Count];
-        for (int i = 0; i < itemsList.Count; i++)
-            items[i] = itemsList[i];
+        T[]? items = JsonSerializer.Deserialize<T[]>(json);
 
         return items;
     }
