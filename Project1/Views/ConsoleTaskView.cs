@@ -9,7 +9,7 @@ public class ConsoleTaskView : ITaskView
     private readonly ITaskService _taskService;
     private readonly IUserService _userService;
     private readonly Session _session;
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
     private readonly AddTaskMenu _addUpdateTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
@@ -27,7 +27,7 @@ public class ConsoleTaskView : ITaskView
         _session = session;
         _filters = new TaskFilter();
         
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
         _addUpdateTaskMenu = new AddTaskMenu();
         _removeTaskMenu = new RemoveTaskMenu();
         _updateTaskMenu = new UpdateTaskMenu();
@@ -35,7 +35,6 @@ public class ConsoleTaskView : ITaskView
         _boardDisplay = new KanbanBoardDisplay();
         _filtersMenu = new FiltersMenu(_filters);
         _userSelectionView = new UserSelectionView(_userService);
-
     }
 
     public void Run()
@@ -56,19 +55,19 @@ public class ConsoleTaskView : ITaskView
                         _taskService.AddTask(newTask);
                     break;
                 case 1:
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(LoadAllDisplayTasks());
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered());
                     if (taskIdToRemove != -1)
                         _taskService.RemoveTask(taskIdToRemove);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(LoadAllDisplayTasks());
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered());
                     
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
                         _taskService.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
                     
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
+                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
                         _taskService.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
                     
@@ -149,14 +148,8 @@ public class ConsoleTaskView : ITaskView
             Console.WriteLine($"Sort        : {_filters.SortBy} ({_filters.SortOrder})");
     }
 
-    private TaskDisplay[] LoadAllDisplayTasks()
+    private IMyCollection<TaskItem> GetAllTasksFiltered()
     {
-        TaskItem[] tasks = _taskService.GetAllTasksSorted(_filters);
-        TaskDisplay[] displayTasks = new TaskDisplay[tasks.Length];
-
-        for (int i = 0; i < tasks.Length; i++)
-            displayTasks[i] = TaskDisplay.FromTask(tasks[i]);
-
-        return displayTasks;
+        return _taskService.GetAllTasksWithFilter(_filters);
     }
 }

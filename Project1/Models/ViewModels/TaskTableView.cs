@@ -1,9 +1,10 @@
 using Project1.Models.ENums;
+using Project1.Models.Interfaces;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Models.ViewModels;
 
-public class TaskTableView
+public class TaskTableView : IFromTaskItem<TaskTableView>
 {
     public int Id { get; set; }
     public string Description { get; set; } = null!;

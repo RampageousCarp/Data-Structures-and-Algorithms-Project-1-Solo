@@ -1,8 +1,8 @@
 namespace Project1.Views;
 
-public class ChoiceMenu<T>
+public class ChoiceMenu
 {
-    public int GetChoice(T?[] choices, bool clearScreen = false, string? title = null)
+    public int GetChoice<T>(T?[] choices, bool clearScreen = false, string? title = null)
     {
         
         bool isSelected = false;
@@ -33,7 +33,8 @@ public class ChoiceMenu<T>
         return currentChoice;
     }
     
-    private void DisplayChoices(T?[] choices, int choiceIndex)
+    
+    private void DisplayChoices<T>(T?[] choices, int choiceIndex)
     {
         for (int i = 0; i < choices.Length; i++)
         {
@@ -50,7 +51,7 @@ public class ChoiceMenu<T>
         
     }
     
-    private int ReadKey(T?[] choices, int currentChoice)
+    private int ReadKey<T>(T?[] choices, int currentChoice)
     {
         ConsoleKeyInfo key = Console.ReadKey(true);
 
@@ -70,7 +71,7 @@ public class ChoiceMenu<T>
         }
     }
     
-    private int MoveUp(T?[] choices, int currentChoice)
+    private int MoveUp<T>(T?[] choices, int currentChoice)
     {
         currentChoice = (currentChoice == 0) ? choices.Length - 1 : currentChoice - 1;
         currentChoice = PassEmptyChoices(choices, -1, currentChoice);
@@ -78,7 +79,7 @@ public class ChoiceMenu<T>
         return currentChoice;
     }
 
-    private int MoveDown(T?[] choices, int currentChoice)
+    private int MoveDown<T>(T?[] choices, int currentChoice)
     {
         currentChoice = (currentChoice == choices.Length - 1) ? 0 : currentChoice + 1;
         currentChoice = PassEmptyChoices(choices, 1, currentChoice);
@@ -86,7 +87,7 @@ public class ChoiceMenu<T>
         return currentChoice;
     }
     
-    private int PassEmptyChoices(T?[] choices, int direction, int currentChoice)
+    private int PassEmptyChoices<T>(T?[] choices, int direction, int currentChoice)
     {
         if (currentChoice == choices.Length)
             return currentChoice;

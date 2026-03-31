@@ -6,11 +6,11 @@ namespace Project1.Views;
 
 public class AddTaskMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
 
     public AddTaskMenu()
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
     }
     
     public CreateTaskModel? AddTask()

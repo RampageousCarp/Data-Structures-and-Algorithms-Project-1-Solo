@@ -5,12 +5,12 @@ namespace Project1.Views;
 
 public class UserSelectionView
 {
-    private ChoiceMenu<string> _menu;
+    private ChoiceMenu _menu;
     private readonly IUserService _userService;
 
     public UserSelectionView(IUserService userService)
     {
-        _menu = new ChoiceMenu<string>();
+        _menu = new ChoiceMenu();
         _userService = userService;
     }
     

@@ -1,3 +1,4 @@
+using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 
@@ -6,6 +7,16 @@ namespace Project1.Views;
 public class KanbanBoardDisplay
 {
     private const int TABLE_WIDTH = 162;
+    private const int COLUMN_WIDTH = 54;
+    
+    private static readonly Func<TaskItem, string>[] _fieldExtractors =
+    [
+        t => t.ConvertTo<TaskTableView>().ToTableId(),
+        t => t.ConvertTo<TaskTableView>().ToTableDescription(),
+        t => t.ConvertTo<TaskTableView>().ToTablePrio(),
+        t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
+        t => t.ConvertTo<TaskTableView>().ToTableCreated(),
+    ];
     
     public void DisplayKanbanBoard(GroupedTasks groupedTasks)
     {
@@ -34,119 +45,38 @@ public class KanbanBoardDisplay
     
     private void DisplayTasks(GroupedTasks groupedTasks)
     {
-        int maxLength = Math.Max(groupedTasks.Todo.Length,
-            Math.Max(groupedTasks.InProgress.Length, groupedTasks.Done.Length));
-
-        for (int i = 0; i < maxLength; i++)
+        IMyIterator<TaskItem> todoIt = groupedTasks.Todo.GetIterator();
+        IMyIterator<TaskItem> inProgressIt = groupedTasks.InProgress.GetIterator();
+        IMyIterator<TaskItem> doneIt = groupedTasks.Done.GetIterator();
+ 
+        while(todoIt.HasNext() || inProgressIt.HasNext() || doneIt.HasNext())
         {
+            TaskItem? todo = todoIt.HasNext() ? todoIt.Next() : null;
+            TaskItem? inProgress = inProgressIt.HasNext() ? inProgressIt.Next() : null;
+            TaskItem? done = doneIt.HasNext() ? doneIt.Next() : null;
+ 
             int rowTop = Console.CursorTop;
-
-            // ID
-            Console.SetCursorPosition(0, rowTop);
-            if (groupedTasks.Todo.Length > i)
-                DisplayTaskField(groupedTasks.Todo[i].ToTableId());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.InProgress.Length > i)
-                DisplayTaskField(groupedTasks.InProgress[i].ToTableId());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.Done.Length > i)
-                DisplayTaskField(groupedTasks.Done[i].ToTableId());
-            else
-                DisplayTaskField("");
-            
-            Console.WriteLine();
-            
-            // Description
-            Console.SetCursorPosition(0, rowTop + 1);
-            if (groupedTasks.Todo.Length > i)
-                DisplayTaskField(groupedTasks.Todo[i].ToTableDescription());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.InProgress.Length > i)
-                DisplayTaskField(groupedTasks.InProgress[i].ToTableDescription());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.Done.Length > i)
-                DisplayTaskField(groupedTasks.Done[i].ToTableDescription());
-            else
-                DisplayTaskField("");
-            
-            Console.WriteLine();
-            
-            // Priority
-            Console.SetCursorPosition(0, rowTop + 2);
-            if (groupedTasks.Todo.Length > i)
-                DisplayTaskField(groupedTasks.Todo[i].ToTablePrio());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.InProgress.Length > i)
-                DisplayTaskField(groupedTasks.InProgress[i].ToTablePrio());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.Done.Length > i)
-                DisplayTaskField(groupedTasks.Done[i].ToTablePrio());
-            else
-                DisplayTaskField("");
-            
-            Console.WriteLine();
-            
-            // Due To
-            Console.SetCursorPosition(0, rowTop + 3);
-            if (groupedTasks.Todo.Length > i)
-                DisplayTaskField(groupedTasks.Todo[i].ToTableDueTo());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.InProgress.Length > i)
-                DisplayTaskField(groupedTasks.InProgress[i].ToTableDueTo());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.Done.Length > i)
-                DisplayTaskField(groupedTasks.Done[i].ToTableDueTo());
-            else
-                DisplayTaskField("");
-            
-            Console.WriteLine();
-            
-            // Created at
-            Console.SetCursorPosition(0, rowTop + 4);
-            if (groupedTasks.Todo.Length > i)
-                DisplayTaskField(groupedTasks.Todo[i].ToTableCreated());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.InProgress.Length > i)
-                DisplayTaskField(groupedTasks.InProgress[i].ToTableCreated());
-            else
-                DisplayTaskField("");
-            
-            if (groupedTasks.Done.Length > i)
-                DisplayTaskField(groupedTasks.Done[i].ToTableCreated());
-            else
-                DisplayTaskField("");
-            
-            Console.WriteLine();
-
-            Console.SetCursorPosition(0, rowTop + 5);
+ 
+            for (int i = 0; i < _fieldExtractors.Length; i++)
+            {
+                Console.SetCursorPosition(0, rowTop + i);
+                DisplayTaskField(todo is not null ? _fieldExtractors[i](todo) : "           ");
+                DisplayTaskField(inProgress is not null ? _fieldExtractors[i](inProgress) : "");
+                DisplayTaskField(done is not null ? _fieldExtractors[i](done) : "");
+                Console.WriteLine();
+            }
+ 
+            Console.SetCursorPosition(0, rowTop + _fieldExtractors.Length);
             DisplayEndLine();
         }
     }
-
+    
     private void DisplayTaskField(string text)
     {
-        if (text.Length >= 54)
-            Console.Write(text.Substring(0, 53) + " ");
+        if (text.Length >= COLUMN_WIDTH)
+            Console.Write(text.Substring(0, COLUMN_WIDTH - 1) + " ");
         else
-            Console.Write(text + new string(' ', 54 - text.Length));
+            Console.Write(text + new string(' ', COLUMN_WIDTH - text.Length));
     }
 
     private void DisplayEndLine()
