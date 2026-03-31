@@ -31,7 +31,7 @@ class Program
         IMyIterator<TaskItem> tasksIterator = new ArrayIterator<TaskItem>(loadedTasks, loadedTasks.Length);
         IMyCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(tasksIterator);
         
-        ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory);
+        ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory, userService);
 
         // Run the view
         AppController controller = new AppController(session, userService, taskService);

@@ -11,13 +11,15 @@ class TaskService : ITaskService
     private readonly IGenericRepository<TaskItem> _repository;
     private readonly IMyCollection<TaskItem> _tasks;
     private readonly IMyCollectionFactory _collectionFactory;
+    private readonly IUserService _userService;
     private int _lastId;
     
-    public TaskService(IGenericRepository<TaskItem> repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
+    public TaskService(IGenericRepository<TaskItem> repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory, IUserService userService)
     {
         _repository = repository;
         _tasks = collection;
         _collectionFactory = collectionFactory;
+        _userService = userService;
         _lastId = LoadLastId(_tasks.GetIterator());
     }
 
@@ -198,6 +200,19 @@ class TaskService : ITaskService
             predicate = task => prev(task) && task.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
         }
         
+        if (filter.Assignee != 0 && filter.Assignee != -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo == filter.Assignee;
+        }
+        
+        if (filter.Assignee == -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo is null;
+        }
+        
+        
         return predicate;
      }
 
@@ -223,6 +238,18 @@ class TaskService : ITaskService
          
          if (filter.SortBy == SortingValue.DueTo)
              return (t1, t2) => t1.DueTo.CompareTo(t2.DueTo) * order;
+         
+         if (filter.SortBy == SortingValue.Assignee)
+             return (t1, t2) =>
+             {
+                 var user1 = _userService.GetUserById(t1.AssignedTo.GetValueOrDefault());
+                 var user2 = _userService.GetUserById(t2.AssignedTo.GetValueOrDefault());
+
+                 string name1 = user1?.Username ?? "";
+                 string name2 = user2?.Username ?? "";
+
+                 return string.Compare(name1, name2, StringComparison.Ordinal) * order;
+             };
 
          return (t1, t2) => t1.Id.CompareTo(t2.Id);
      }

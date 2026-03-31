@@ -36,9 +36,9 @@ public class ConsoleTaskView : ITaskView
         _removeTaskMenu = new RemoveTaskMenu(_dislayMapper);
         _updateTaskMenu = new UpdateTaskMenu(_dislayMapper);
         _toggleTaskMenu = new ToggleTaskMenu(_dislayMapper);
-        _boardDisplay = new KanbanBoardDisplay(_userService);
-        _filtersMenu = new FiltersMenu(_filters);
-        _userSelectionView = new UserSelectionView(_userService);
+        _boardDisplay = new KanbanBoardDisplay(userService);
+        _userSelectionView = new UserSelectionView(userService);
+        _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
     }
 
     public void Run()
@@ -147,6 +147,9 @@ public class ConsoleTaskView : ITaskView
         
         if (!string.IsNullOrEmpty(_filters.Keyword))
             Console.WriteLine($"Keyword     : \"{_filters.Keyword}\"");
+        
+        if (_filters.Assignee != 0)
+            Console.WriteLine($"Assignee    : {_filters.AssigneeUsername}");
         
         if (_filters.ApplySort)
             Console.WriteLine($"Sort        : {_filters.SortBy} ({_filters.SortOrder})");
