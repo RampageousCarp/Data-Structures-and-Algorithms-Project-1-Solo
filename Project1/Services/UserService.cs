@@ -34,7 +34,7 @@ public class UserService : IUserService
 
     public User? GetUserById(int id)
     {
-        User? user = _users.FindBy<int>(id, (u, key) => u.Id == key);
+        User? user = _users.FindBy<int>(id, (u, key) => u.Id.CompareTo(key));
 
         return user;
     }

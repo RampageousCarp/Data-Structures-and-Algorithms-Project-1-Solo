@@ -68,11 +68,11 @@ public class MyArrayCollection<T> : IMyCollection<T>
         }
     }
 
-    public T? FindBy<K>(K key, Func<T, K, bool> comparer)
+    public T? FindBy<K>(K key, Func<T, K, int> comparer)
     {
         for (int i = 0; i < _count; i ++)
         
-            if (comparer(_items[i], key))
+            if (comparer(_items[i], key) == 0)
                 return _items[i];
 
         return default(T);

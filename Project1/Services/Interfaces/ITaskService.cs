@@ -12,5 +12,6 @@ public interface ITaskService
     void RemoveTask(int id);
     void UpdateTask(int id, UpdateTaskModel updateTaskData);
     void ToggleTask(int id, TaskStatus newStatus);
+    bool CanUserEdit(int taskId, int currentUserId);
     void SaveTasks();
 }

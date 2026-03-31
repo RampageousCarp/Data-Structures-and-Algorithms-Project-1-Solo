@@ -100,7 +100,7 @@ class TaskService : ITaskService
 
     public void RemoveTask(int id)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
         if (task is not null)
         {
             _tasks.Remove(task);
@@ -110,7 +110,7 @@ class TaskService : ITaskService
 
     public void UpdateTask(int id, UpdateTaskModel updateTaskData)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
         if (task is null)
             return;
 
@@ -123,13 +123,22 @@ class TaskService : ITaskService
 
     public void ToggleTask(int id, TaskStatus newStatus)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
         if (task is null)
             return;
         
         task.Status = newStatus;
         
         _tasks.Dirty = true;
+    }
+
+    public bool CanUserEdit(int taskId, int currentUserId)
+    {
+        TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));
+        if (task is null)
+            return true;
+
+        return task.AssignedTo == currentUserId;
     }
 
     public void SaveTasks()
