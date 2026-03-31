@@ -23,7 +23,7 @@ public class KanbanBoardDisplay
             t => t.ConvertTo<TaskTableView>().ToTablePrio(),
             t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
             t => t.ConvertTo<TaskTableView>().ToTableCreated(),
-            t => GetAssigneeString(_userService.GetUserById(t.Id))
+            t => GetAssigneeString(_userService.GetUserById(t.AssignedTo.GetValueOrDefault()))
         };
     }
     
@@ -95,6 +95,6 @@ public class KanbanBoardDisplay
 
     private string GetAssigneeString(User? user)
     {
-        return $"Assigned to: {(user is null ? "Unassigned" : user.Username)}";
+        return $"Assigned to: {(user?.Username ?? "Unassigned")}";
     }
 }

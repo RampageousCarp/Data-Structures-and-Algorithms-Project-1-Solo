@@ -2,6 +2,7 @@ using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views;
+using Project1.Views.Mapping;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 public class ConsoleTaskView : ITaskView
@@ -18,6 +19,8 @@ public class ConsoleTaskView : ITaskView
     private readonly FiltersMenu _filtersMenu;
     private readonly UserSelectionView _userSelectionView;
     
+    private readonly TaskDisplayMapper _dislayMapper;
+    
     private TaskFilter _filters;
     
     public ConsoleTaskView(ITaskService taskService, IUserService userService, Session session)
@@ -28,10 +31,11 @@ public class ConsoleTaskView : ITaskView
         _filters = new TaskFilter();
         
         _menu = new ChoiceMenu();
+        _dislayMapper = new TaskDisplayMapper(userService);
         _addUpdateTaskMenu = new AddTaskMenu();
-        _removeTaskMenu = new RemoveTaskMenu();
-        _updateTaskMenu = new UpdateTaskMenu();
-        _toggleTaskMenu = new ToggleTaskMenu();
+        _removeTaskMenu = new RemoveTaskMenu(_dislayMapper);
+        _updateTaskMenu = new UpdateTaskMenu(_dislayMapper);
+        _toggleTaskMenu = new ToggleTaskMenu(_dislayMapper);
         _boardDisplay = new KanbanBoardDisplay(_userService);
         _filtersMenu = new FiltersMenu(_filters);
         _userSelectionView = new UserSelectionView(_userService);

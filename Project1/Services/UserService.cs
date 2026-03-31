@@ -31,6 +31,13 @@ public class UserService : IUserService
 
         return allUsers;
     }
+
+    public User? GetUserById(int id)
+    {
+        User? user = _users.FindBy<int>(id, (u, key) => u.Id == key);
+
+        return user;
+    }
     
     private int LoadLastId(IMyIterator<User> items)
     {

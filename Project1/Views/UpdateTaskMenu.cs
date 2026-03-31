@@ -2,6 +2,7 @@ using Project1.Models;
 using Project1.Models.ENums;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
+using Project1.Views.Mapping;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Views;
@@ -9,12 +10,13 @@ namespace Project1.Views;
 public class UpdateTaskMenu
 {
     private readonly ChoiceMenu _menu;
-
-    public UpdateTaskMenu()
+    private TaskDisplayMapper _displayMapper;
+    
+    public UpdateTaskMenu(TaskDisplayMapper mapper)
     {
         _menu = new ChoiceMenu();
+        _displayMapper = mapper;
     }
-    
     
     public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks)
     {
@@ -27,7 +29,7 @@ public class UpdateTaskMenu
             if (menuItems[selectedIndex].IsAction)
                 return null;
 
-            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(menuItems[selectedIndex].Value!.ConvertTo<TaskDisplay>());
+            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(_displayMapper.Map(menuItems[selectedIndex].Value!));
             if (result.HasValue)
                 return result;
         }
@@ -51,7 +53,7 @@ public class UpdateTaskMenu
         while (iterator.HasNext())
         {
             TaskItem task = iterator.Next();
-            menuItems[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
+            menuItems[p++] = new MenuOption<TaskItem>(task, _displayMapper.Map(task).ToString());
         }
         
         menuItems[^1] = new MenuOption<TaskItem>("Exit");

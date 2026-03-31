@@ -1,16 +1,19 @@
 using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
+using Project1.Views.Mapping;
 
 namespace Project1.Views;
 
 public class RemoveTaskMenu
 {
     private ChoiceMenu _menu;
+    private TaskDisplayMapper _displayMapper;
     
-    public RemoveTaskMenu()
+    public RemoveTaskMenu(TaskDisplayMapper mapper)
     {
         _menu = new ChoiceMenu();
+        _displayMapper = mapper;
     }
     
 
@@ -25,7 +28,7 @@ public class RemoveTaskMenu
             if (menuItems[selectedIndex].IsAction)
                 return -1;
 
-            if (ConfirmRemove(menuItems[selectedIndex].Value!.ConvertTo<TaskDisplay>()))
+            if (ConfirmRemove(_displayMapper.Map(menuItems[selectedIndex].Value!)))
                 return menuItems[selectedIndex].Value!.Id;
         }
     }
@@ -48,7 +51,7 @@ public class RemoveTaskMenu
         while (iterator.HasNext())
         {
             TaskItem task = iterator.Next();
-            menuItems[p++] = new MenuOption<TaskItem>(task, task.ConvertTo<TaskDisplay>().ToString());
+            menuItems[p++] = new MenuOption<TaskItem>(task, _displayMapper.Map(task).ToString());
         }
         
         menuItems[^1] = new MenuOption<TaskItem>("Exit");
