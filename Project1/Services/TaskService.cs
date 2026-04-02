@@ -98,38 +98,44 @@ class TaskService : ITaskService
         _tasks.Dirty = true;
     }
 
-    public void RemoveTask(int id)
+    public bool RemoveTask(int id, int currentUserId)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
-        if (task is not null)
-        {
-            _tasks.Remove(task);
-            _tasks.Dirty = true;
-        }
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
+        
+        _tasks.Remove(task);
+        _tasks.Dirty = true;
+
+        return true;
+
     }
 
-    public void UpdateTask(int id, UpdateTaskModel updateTaskData)
+    public bool UpdateTask(int id, int currentUserId, UpdateTaskModel updateTaskData)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
-        if (task is null)
-            return;
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
 
         task.Description = updateTaskData.Description;
         task.Priority = updateTaskData.Priority;
         task.Status = updateTaskData.Status;
         
         _tasks.Dirty = true;
+
+        return true;
     }
 
-    public void ToggleTask(int id, TaskStatus newStatus)
+    public bool ToggleTask(int id, int currentUserId, TaskStatus newStatus)
     {
         TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
-        if (task is null)
-            return;
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
         
         task.Status = newStatus;
         
         _tasks.Dirty = true;
+        return true;
     }
 
     public bool CanUserEdit(int taskId, int currentUserId)

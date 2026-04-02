@@ -9,9 +9,9 @@ public interface ITaskService
     IMyCollection<TaskItem> GetAllTasksWithFilter(TaskFilter filter);
     GroupedTasks GetGroupedTasks(TaskFilter? filter);
     void AddTask(CreateTaskModel createTaskData);
-    void RemoveTask(int id);
-    void UpdateTask(int id, UpdateTaskModel updateTaskData);
-    void ToggleTask(int id, TaskStatus newStatus);
+    bool RemoveTask(int id, int currentUserId);
+    bool UpdateTask(int id, int currentUserId, UpdateTaskModel updateTaskData);
+    bool ToggleTask(int id, int currentUserId, TaskStatus newStatus);
     bool CanUserEdit(int taskId, int currentUserId);
     void SaveTasks();
 }
