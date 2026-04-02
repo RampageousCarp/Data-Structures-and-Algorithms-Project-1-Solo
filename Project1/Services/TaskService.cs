@@ -120,6 +120,8 @@ class TaskService : ITaskService
         task.Description = updateTaskData.Description;
         task.Priority = updateTaskData.Priority;
         task.Status = updateTaskData.Status;
+        task.DueTo = updateTaskData.DueTo;
+        task.AssignedTo = updateTaskData.AssignedTo;
         
         _tasks.Dirty = true;
 

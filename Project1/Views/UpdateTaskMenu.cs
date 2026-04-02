@@ -11,11 +11,15 @@ public class UpdateTaskMenu
 {
     private readonly ChoiceMenu _menu;
     private TaskDisplayMapper _displayMapper;
+    private UserSelectionView _userSelectionView;
+    private Func<int, User?> _getUserById;
     
-    public UpdateTaskMenu(TaskDisplayMapper mapper)
+    public UpdateTaskMenu(TaskDisplayMapper mapper, UserSelectionView userSelectionView, Func<int, User?> getUserById)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _userSelectionView = userSelectionView;
+        _getUserById = getUserById;
     }
     
     public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
@@ -31,7 +35,7 @@ public class UpdateTaskMenu
                 return null;
     
             if (canEdit(menuItems[selectedIndex].Value.Id))
-                result = HandleTaskUpdate(_displayMapper.Map(menuItems[selectedIndex].Value!));
+                result = HandleTaskUpdate(menuItems[selectedIndex].Value!);
             else
                 UpdateBlocked(menuItems[selectedIndex].Value);
             
@@ -67,7 +71,7 @@ public class UpdateTaskMenu
     }
     
     
-    private (int id, UpdateTaskModel updatedTask)? HandleTaskUpdate(TaskDisplay taskToUpdate)
+    private (int id, UpdateTaskModel updatedTask)? HandleTaskUpdate(TaskItem taskToUpdate)
     {
         UpdateTaskModel updatedTask = CreateTaskModelFromDisplay(taskToUpdate);
         bool dataIncomplete = false;
@@ -94,8 +98,22 @@ public class UpdateTaskMenu
                 case 3:
                     updatedTask.DueTo = EnterDueToDate();
                     break;
+                case 4:
+                    (int id, string name)? newAssignee = ChooseAssignmentAction();
+                    if (newAssignee.Value.id == 0)
+                    {
+                        updatedTask.AssignedTo = null;
+                        updatedTask.AssigneeName = newAssignee.Value.name;
+                    }
+                    else if (newAssignee.Value.id != -1)
+                    {
+                        updatedTask.AssignedTo = newAssignee.Value.id;
+                        updatedTask.AssigneeName = newAssignee.Value.name;
+                    }
+
+                    break;
                 
-                case 5:
+                case 6:
                     if (!IsValid(updatedTask))
                     {
                         dataIncomplete = true;
@@ -113,7 +131,7 @@ public class UpdateTaskMenu
         }
     }
     
-    private int DisplayUpdateMenu(TaskDisplay original, UpdateTaskModel updated, bool showValidationError)
+    private int DisplayUpdateMenu(TaskItem original, UpdateTaskModel updated, bool showValidationError)
     {
         Console.Clear();
         Console.WriteLine($"=== Update Task #{original.Id} ===\n");
@@ -127,6 +145,7 @@ public class UpdateTaskMenu
             $"Priority: {updated.Priority}",
             $"Status: {updated.Status}",
             $"Due To: {updated.DueTo:dd-MM-yyyy}",
+            $"Assigned To: {updated.AssigneeName}", 
             null,
             "Update",
             "Exit"
@@ -135,13 +154,17 @@ public class UpdateTaskMenu
         return _menu.GetChoice(menuItems);
     }
     
-    private UpdateTaskModel CreateTaskModelFromDisplay(TaskDisplay task)
+    private UpdateTaskModel CreateTaskModelFromDisplay(TaskItem task)
     {
+        User? user = _getUserById(task.AssignedTo.GetValueOrDefault());
         return new UpdateTaskModel
         {
             Description = task.Description,
             Priority = task.Priority,
-            Status = task.Status
+            Status = task.Status,
+            DueTo = task.DueTo,
+            AssignedTo = task.AssignedTo,
+            AssigneeName = task.AssignedTo is null ? "Unassigned" : _getUserById(task.AssignedTo.GetValueOrDefault()).Username
         };
     }
     
@@ -178,7 +201,6 @@ public class UpdateTaskMenu
     
     private DateOnly EnterDueToDate()
     {
-        
         Console.Clear();
         Console.WriteLine("=== Enter Due To Date ===\n");
         Console.Write("DueTo (dd-mm-yyyy): ");
@@ -189,6 +211,38 @@ public class UpdateTaskMenu
             return date;
         
         return DateOnly.FromDateTime(DateTime.Now);
+    }
+
+    private (int newAssigneeId, string name)? ChooseAssignmentAction()
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Enter new assignee ===\n");
+        string?[] choices = ["Unassign", "Assign to", null, "Exit"];
+        
+        int option = _menu.GetChoice(choices);
+        switch (option)
+        {
+            case 0:
+                return (0, "Unassigned");
+                
+            case 1:
+                return ChooseAssignee();
+                
+            case 3:
+                return null;
+            
+            default:
+                return null;
+        }
+    }
+
+    private (int newAssigneeId, string name)? ChooseAssignee()
+    {
+        User? chosenUser = _userSelectionView.ChooseUser();
+        if (chosenUser is null)
+            return null;
+        
+        return (chosenUser.Id, chosenUser.Username);
     }
     
     private bool IsValid(UpdateTaskModel task)

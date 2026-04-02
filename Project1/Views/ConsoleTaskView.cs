@@ -32,12 +32,12 @@ public class ConsoleTaskView : ITaskView
         
         _menu = new ChoiceMenu();
         _dislayMapper = new TaskDisplayMapper(userService);
+        _userSelectionView = new UserSelectionView(userService);
         _addUpdateTaskMenu = new AddTaskMenu();
         _removeTaskMenu = new RemoveTaskMenu(_dislayMapper);
-        _updateTaskMenu = new UpdateTaskMenu(_dislayMapper);
+        _updateTaskMenu = new UpdateTaskMenu(_dislayMapper, _userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(_dislayMapper);
         _boardDisplay = new KanbanBoardDisplay(userService);
-        _userSelectionView = new UserSelectionView(userService);
         _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
     }
 

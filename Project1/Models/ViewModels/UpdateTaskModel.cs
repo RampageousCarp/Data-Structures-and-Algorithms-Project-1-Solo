@@ -9,6 +9,8 @@ public class UpdateTaskModel
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
     public DateOnly DueTo { get; set; }
+    public int? AssignedTo { get; set; }
+    public string AssigneeName { get; set; } = "Unassigned";
     
     public UpdateTaskModel()
     {
