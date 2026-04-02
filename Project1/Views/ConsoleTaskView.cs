@@ -59,14 +59,14 @@ public class ConsoleTaskView : ITaskView
                         _taskService.AddTask(newTask);
                     break;
                 case 1:
-                    RemoveTask();
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered(), CanUserEdit);
+                    if (taskIdToRemove != -1)
+                        _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered());
-                    
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
                         _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id, taskToUpdate.Value.updatedTask);
-                    
                     break;
                 case 3:
                     (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
@@ -158,25 +158,6 @@ public class ConsoleTaskView : ITaskView
         return _taskService.GetAllTasksWithFilter(_filters);
     }
 
-    private void RemoveTask(IMyCollection<TaskItem> tasks = null)
-    {
-        if (tasks is null)
-            tasks = GetAllTasksFiltered();
-
-        int taskIdToRemove = _removeTaskMenu.RemoveTask(tasks);
-        if (taskIdToRemove != -1)
-            if (!_taskService.CanUserEdit(taskIdToRemove, _session.CurrentUser!.Id))
-            {
-                Console.Clear();
-                Console.CursorVisible = false;
-                Console.WriteLine($"=== Remove #{taskIdToRemove} ===\n");
-                Console.WriteLine("You don't have permission to remove this task");
-                Console.WriteLine("Press any key to continue");
-                Console.ReadKey();
-                Console.CursorVisible = true;
-                RemoveTask(tasks);
-            }
-            else
-                _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
-    }
+    private bool CanUserEdit(int taskId) => _taskService.CanUserEdit(taskId, _session.CurrentUser!.Id);
+    
 }

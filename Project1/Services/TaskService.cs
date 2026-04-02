@@ -143,8 +143,8 @@ class TaskService : ITaskService
         TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));
         if (task is null)
             return true;
-
-        return task.AssignedTo == currentUserId;
+        
+        return (task.AssignedTo == currentUserId || task.AssignedTo is null) ;
     }
 
     public void SaveTasks()

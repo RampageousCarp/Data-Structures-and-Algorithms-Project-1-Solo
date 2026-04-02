@@ -17,19 +17,25 @@ public class RemoveTaskMenu
     }
     
 
-    public int RemoveTask(IMyCollection<TaskItem> tasks)
+    public int RemoveTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
     {
         MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
         while (true)
         {
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+            int result = -1;
             
             if (menuItems[selectedIndex].IsAction)
                 return -1;
+            
+            if (canEdit(menuItems[selectedIndex].Value.Id))
+                result = menuItems[selectedIndex].Value!.Id;
+            else
+                RemoveBlocked(menuItems[selectedIndex].Value);
 
             if (ConfirmRemove(_displayMapper.Map(menuItems[selectedIndex].Value!)))
-                return menuItems[selectedIndex].Value!.Id;
+                return result;
         }
     }
     
@@ -65,5 +71,16 @@ public class RemoveTaskMenu
         Console.WriteLine($"=== Remove #{task.Id} {task.Description} ===\n");
         
         return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+
+    private void RemoveBlocked(TaskItem task)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Remove #{task.Id} {task.Description} ===\n");
+        Console.WriteLine("You don't have permission to remove this task");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
     }
 }

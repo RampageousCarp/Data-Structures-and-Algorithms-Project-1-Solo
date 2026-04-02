@@ -18,18 +18,23 @@ public class UpdateTaskMenu
         _displayMapper = mapper;
     }
     
-    public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks)
+    public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
     {
         MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
         while (true)
         {
+            (int id, UpdateTaskModel updatedTask)? result = null;
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
                 return null;
-
-            (int id, UpdateTaskModel updatedTask)? result = HandleTaskUpdate(_displayMapper.Map(menuItems[selectedIndex].Value!));
+    
+            if (canEdit(menuItems[selectedIndex].Value.Id))
+                result = HandleTaskUpdate(_displayMapper.Map(menuItems[selectedIndex].Value!));
+            else
+                UpdateBlocked(menuItems[selectedIndex].Value);
+            
             if (result.HasValue)
                 return result;
         }
@@ -198,5 +203,16 @@ public class UpdateTaskMenu
         Console.WriteLine("Are you sure you want to update this task?\n");
 
         return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+
+    private void UpdateBlocked(TaskItem task)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Update #{task.Id} ===\n");
+        Console.WriteLine("You don't have permission to update this task");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
     }
 }
