@@ -91,7 +91,9 @@ class TaskService : ITaskService
             Description = createTaskData.Description,
             Priority = createTaskData.Priority,
             Status = createTaskData.Status,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DueTo = createTaskData.DueTo,
+            AssignedTo = createTaskData.AssignedTo
         };
         
         _tasks.Add(newTask);

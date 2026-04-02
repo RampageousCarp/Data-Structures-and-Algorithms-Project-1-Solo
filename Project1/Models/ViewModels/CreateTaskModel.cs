@@ -9,7 +9,7 @@ public class CreateTaskModel
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
     public DateOnly DueTo { get; set; }
-    public int? AssignedTo { get; set; }
+    public int? AssignedTo { get; set; } = null;
     public string? AssigneeName { get; set; } = "Unassigned";
     
     public CreateTaskModel()

@@ -33,7 +33,7 @@ public class ConsoleTaskView : ITaskView
         _menu = new ChoiceMenu();
         _dislayMapper = new TaskDisplayMapper(userService);
         _userSelectionView = new UserSelectionView(userService);
-        _addUpdateTaskMenu = new AddTaskMenu();
+        _addUpdateTaskMenu = new AddTaskMenu(session, _userSelectionView);
         _removeTaskMenu = new RemoveTaskMenu(_dislayMapper);
         _updateTaskMenu = new UpdateTaskMenu(_dislayMapper, _userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(_dislayMapper);
