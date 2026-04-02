@@ -69,7 +69,7 @@ public class ConsoleTaskView : ITaskView
                         _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id, taskToUpdate.Value.updatedTask);
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered());
+                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
                         _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id, taskToToggle.Value.status);
                     
@@ -97,7 +97,7 @@ public class ConsoleTaskView : ITaskView
             "Add Task",
             "Remove Task",
             "Update Task",
-            "Toggle Task State",
+            "Toggle Task Status",
             "Apply filters",
             null,
             "Change user",

@@ -17,18 +17,24 @@ public class ToggleTaskMenu
         _displayMapper = mapper;
     }
 
-    public (int id, TaskStatus status)? ToggleTask(IMyCollection<TaskItem> tasks)
+    public (int id, TaskStatus status)? ToggleTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
     {
         MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
         while (true)
         {
+            (int id, TaskStatus status)? result = null;
+            TaskStatus? newStatus = null;
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
                 return null;
-
-            TaskStatus? newStatus = HandleTaskToggle();
+            
+            if (canEdit(menuItems[selectedIndex].Value.Id))
+                newStatus = HandleTaskToggle();
+            else
+                ToggleBlocked(menuItems[selectedIndex].Value!);
+            
             if (newStatus is not null)
                 return ((int id, TaskStatus status)?)(menuItems[selectedIndex].Value!.Id, newStatus);
         }
@@ -79,5 +85,16 @@ public class ToggleTaskMenu
             return null;
         
         return (TaskStatus)selectedIndex;
+    }
+    
+    private void ToggleBlocked(TaskItem task)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Toggle #{task.Id} {task.Description} ===\n");
+        Console.WriteLine("You don't have permission to toggle this task status");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
     }
 }
