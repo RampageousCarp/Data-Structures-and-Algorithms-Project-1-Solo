@@ -59,9 +59,7 @@ public class ConsoleTaskView : ITaskView
                         _taskService.AddTask(newTask);
                     break;
                 case 1:
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered());
-                    if (taskIdToRemove != -1)
-                        _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
+                    RemoveTask();
                     break;
                 case 2:
                     (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered());
@@ -158,5 +156,27 @@ public class ConsoleTaskView : ITaskView
     private IMyCollection<TaskItem> GetAllTasksFiltered()
     {
         return _taskService.GetAllTasksWithFilter(_filters);
+    }
+
+    private void RemoveTask(IMyCollection<TaskItem> tasks = null)
+    {
+        if (tasks is null)
+            tasks = GetAllTasksFiltered();
+
+        int taskIdToRemove = _removeTaskMenu.RemoveTask(tasks);
+        if (taskIdToRemove != -1)
+            if (!_taskService.CanUserEdit(taskIdToRemove, _session.CurrentUser!.Id))
+            {
+                Console.Clear();
+                Console.CursorVisible = false;
+                Console.WriteLine($"=== Remove #{taskIdToRemove} ===\n");
+                Console.WriteLine("You don't have permission to remove this task");
+                Console.WriteLine("Press any key to continue");
+                Console.ReadKey();
+                Console.CursorVisible = true;
+                RemoveTask(tasks);
+            }
+            else
+                _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
     }
 }
