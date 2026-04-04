@@ -142,6 +142,16 @@ class TaskService : ITaskService
         return true;
     }
 
+    public bool AssignTask(int id, int currentUserId, int? newAssignee)
+    {
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
+
+        task.AssignedTo = newAssignee;
+        return true;
+    }
+
     public bool CanUserEdit(int taskId, int currentUserId)
     {
         TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));
