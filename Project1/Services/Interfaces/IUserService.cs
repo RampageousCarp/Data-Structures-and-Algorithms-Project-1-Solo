@@ -7,6 +7,6 @@ public interface IUserService
 {
     public User[] GetAllUsers();
     public User? GetUserById(int id);
-    User AddUser(CreateUserModel user);
-    bool RemoveUser(int id);
+    void AddUser(CreateUserModel user);
+    void RemoveUser(int id);
 }

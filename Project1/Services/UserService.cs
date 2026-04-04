@@ -40,14 +40,32 @@ public class UserService : IUserService
         return user;
     }
 
-    public User AddUser(CreateUserModel user)
+    public void AddUser(CreateUserModel user)
     {
-        throw new NotImplementedException();
+        User newUser = new User 
+        {
+            Id = ++_lastId,
+            Username = user.Username!,
+            FirstName = user.FirstName!,
+            LastName = user.LastName!
+        };
+        
+        _users.Add(newUser);
+        _users.Dirty = true;
+
+        SaveChanges();
     }
 
-    public bool RemoveUser(int id)
+    public void RemoveUser(int id)
     {
-        throw new NotImplementedException();
+        User? user = _users.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (user is null)
+            return ;
+        
+        _users.Remove(user);
+        _users.Dirty = true;
+
+        SaveChanges();
     }
 
     private int LoadLastId(IMyIterator<User> items)
@@ -62,5 +80,11 @@ public class UserService : IUserService
         }
 
         return lastId;
+    }
+
+    public void SaveChanges()
+    {
+        if (_users.Dirty)
+            _repository.SaveItems(_users.GetIterator(), _users.Count);
     }
 }
