@@ -20,7 +20,7 @@ public class AssignTaskMenu
         _getUserById = getUserById;
     }
 
-    public (int id, int? assigneeId)? AssignTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public (int id, int? assigneeId)? AssignTask(IMyCollection<TaskItem> tasks, int currentUserId, Func<int, bool> canEdit)
     {
         MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
@@ -33,7 +33,7 @@ public class AssignTaskMenu
                 return null;
             
             if (canEdit(menuItems[selectedIndex].Value!.Id))
-                newAssignee = ChooseAssignmentMethod(menuItems[selectedIndex].Value);
+                newAssignee = ChooseAssignmentMethod(menuItems[selectedIndex].Value!, currentUserId);
             else
                 AssignmentBlocked(menuItems[selectedIndex].Value!);
 
@@ -68,22 +68,34 @@ public class AssignTaskMenu
         return menuItems;
     }
     
-    private int? ChooseAssignmentMethod(TaskItem task)
+    private int? ChooseAssignmentMethod(TaskItem task, int currentUserId)
     {
+        string?[] options;
+        int menuType;
         if (task.AssignedTo is null)
-            return AssignTaskTo();
+        {
+            menuType = 1;
+            options = ["Assign myself", "Assign Task To", null, "Exit"];
+        }
 
-        string?[] options = ["Unassign myself", "Reassign Task To", null, "Exit"];
+        else
+        {
+            menuType = 2;
+            options = ["Unassign myself", "Reassign Task To", null, "Exit"];
+        }
+
         Console.Clear();
         Console.WriteLine($"=== Choose Assignment Option For #{task.Id} {task.Description} ===\n");
         int optionChoice = _menu.GetChoice(options);
 
-        switch (optionChoice)
+        switch (menuType, optionChoice)
         {
-            case 0:
-                return null;
-            case 1:
+            case (1, 0):
+                return currentUserId;
+            case (1, 1) or (2, 1):
                 return AssignTaskTo();
+            case (2, 0):
+                return null;
             default:
                 return -1;
         }

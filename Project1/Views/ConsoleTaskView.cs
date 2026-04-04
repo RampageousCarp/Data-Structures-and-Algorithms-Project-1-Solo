@@ -82,7 +82,7 @@ public class ConsoleTaskView : ITaskView
                     break;
                 case 4:
                     (int id, int? assigneeId)? taskAssignment =
-                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), CanUserEdit);
+                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), _session.CurrentUser!.Id, CanUserEdit);
                     if (taskAssignment is not null)
                         _taskService.AssignTask(taskAssignment.Value.id, _session.CurrentUser!.Id,
                             taskAssignment.Value.assigneeId);
