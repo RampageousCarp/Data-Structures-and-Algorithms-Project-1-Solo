@@ -91,15 +91,10 @@ public class ConsoleTaskView : ITaskView
                 case 5:
                     _filtersMenu.SelectFilters();
                     break;
-                case 7:
-                    User? newLogin = _userSelectionView.ChooseUser();
-                    if (newLogin is not null)
-                        _session.Login(newLogin);
-                    break;
                 
                 default:
-                    Environment.Exit(0);
-                    break;
+                    _session.Logout();
+                    return;
             }
         }
     }
@@ -115,7 +110,6 @@ public class ConsoleTaskView : ITaskView
             "Assign/Reassign Task",
             "Apply filters",
             null,
-            "Change user",
             "Exit"
         ];
         

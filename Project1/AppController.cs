@@ -27,7 +27,10 @@ public class AppController
                 StartMenuView startMenu = new StartMenuView(_userService, _taskService, _session);
                 StartMenuResult result = startMenu.Run();
                 if (result == StartMenuResult.Exit)
+                {
+                    _taskService.SaveTasks();
                     return;
+                }
             }
             else
                 RunTaskView();
