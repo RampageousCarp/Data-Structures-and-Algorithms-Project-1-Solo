@@ -152,6 +152,20 @@ class TaskService : ITaskService
         return true;
     }
 
+    public void UnassignUser(int userId)
+    {
+        IMyIterator<TaskItem> iterator = _tasks.GetIterator();
+        iterator.Reset();
+        while (iterator.HasNext())
+        {
+            TaskItem task = iterator.Next();
+            if (task.AssignedTo == userId)
+                task.AssignedTo = null;
+        }
+
+        _tasks.Dirty = true;
+    }
+
     public bool CanUserEdit(int taskId, int currentUserId)
     {
         TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));

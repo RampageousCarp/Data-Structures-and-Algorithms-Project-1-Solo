@@ -3,6 +3,7 @@ using Project1.Models.ENums;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views.Mapping;
+using Project1.Views.Users;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Views;
@@ -100,6 +101,8 @@ public class UpdateTaskMenu
                     break;
                 case 4:
                     (int id, string name)? newAssignee = ChooseAssignmentAction();
+                    if (newAssignee is null)
+                        break;
                     if (newAssignee.Value.id == 0)
                     {
                         updatedTask.AssignedTo = null;

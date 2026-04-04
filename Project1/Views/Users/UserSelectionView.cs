@@ -1,7 +1,7 @@
 using Project1.Models;
 using Project1.Services.Interfaces;
 
-namespace Project1.Views;
+namespace Project1.Views.Users;
 
 public class UserSelectionView
 {
