@@ -1,3 +1,4 @@
+using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 
@@ -8,12 +9,14 @@ public class UserManagementView
     private readonly ChoiceMenu _menu;
     private readonly IUserService _userService;
     private readonly Action<int> _onUserDeleted;
+    private readonly UserSelectionView _userSelectionView;
 
-    public UserManagementView(IUserService userService, Action<int> onUserDeleted)
+    public UserManagementView(IUserService userService, Action<int> onUserDeleted, UserSelectionView userSelectionView)
     {
         _menu = new ChoiceMenu();
         _userService = userService;
         _onUserDeleted = onUserDeleted;
+        _userSelectionView = userSelectionView;
     }
 
     public void Run()
@@ -90,7 +93,6 @@ public class UserManagementView
             }
         }
     }
-    
 
     private string EnterField(string fieldName)
     {
@@ -111,6 +113,19 @@ public class UserManagementView
 
     private void DeleteUser()
     {
+        User? userToDelete = _userSelectionView.ChooseUser();
+
+        if (userToDelete is null) return;
         
+        if (ConfirmRemove(userToDelete))
+            _userService.RemoveUser(userToDelete.Id);
+    }
+    
+    private bool ConfirmRemove(User user)
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Remove User #{user.Id} {user.Username} ===\n");
+        
+        return _menu.GetChoice(["Yes", "No"]) == 0;
     }
 }

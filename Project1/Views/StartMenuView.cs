@@ -21,7 +21,7 @@ public class StartMenuView
         {
             taskService.UnassignUser(userId);  // clean up tasks first
             userService.RemoveUser(userId);     // then remove the user
-        });
+        }, _userSelectionView);
     }
 
     public StartMenuResult Run()
