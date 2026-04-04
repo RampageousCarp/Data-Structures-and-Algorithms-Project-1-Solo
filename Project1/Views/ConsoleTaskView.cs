@@ -2,34 +2,45 @@ using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views;
+using Project1.Views.Mapping;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 public class ConsoleTaskView : ITaskView
 {
-    private readonly ITaskService _service;
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ITaskService _taskService;
+    private readonly IUserService _userService;
+    private readonly Session _session;
+    private readonly ChoiceMenu _menu;
     private readonly AddTaskMenu _addUpdateTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
+    private readonly AssignTaskMenu _assignTaskMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
     private readonly FiltersMenu _filtersMenu;
+    private readonly UserSelectionView _userSelectionView;
+    
+    private readonly TaskDisplayMapper _displayMapper;
     
     private TaskFilter _filters;
     
-    public ConsoleTaskView(ITaskService service)
+    public ConsoleTaskView(ITaskService taskService, IUserService userService, Session session)
     {
-        _service = service;
+        _taskService = taskService;
+        _userService = userService;
+        _session = session;
         _filters = new TaskFilter();
         
-        _menu = new ChoiceMenu<string>();
-        _addUpdateTaskMenu = new AddTaskMenu(_menu);
-        _removeTaskMenu = new RemoveTaskMenu(_menu);
-        _updateTaskMenu = new UpdateTaskMenu(_menu);
-        _toggleTaskMenu = new ToggleTaskMenu(_menu);
-        _boardDisplay = new KanbanBoardDisplay();
-        _filtersMenu = new FiltersMenu(_menu, _filters);
-
+        _menu = new ChoiceMenu();
+        _displayMapper = new TaskDisplayMapper(userService);
+        _userSelectionView = new UserSelectionView(userService);
+        _addUpdateTaskMenu = new AddTaskMenu(session, _userSelectionView);
+        _removeTaskMenu = new RemoveTaskMenu(_displayMapper);
+        _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
+        _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
+        _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
+        _boardDisplay = new KanbanBoardDisplay(userService);
+        _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
     }
 
     public void Run()
@@ -37,40 +48,57 @@ public class ConsoleTaskView : ITaskView
         while (true)
         {
             Console.Clear();
-            GroupedTasks groupedTasks = _service.GetGroupedTasks(_filters);
+            GroupedTasks groupedTasks = _taskService.GetGroupedTasks(_filters);
             _boardDisplay.DisplayKanbanBoard(groupedTasks);
+            DisplayActiveFilters();
+                
             int option = MainMenuOption();
             switch (option)
             {
                 case 0:
                     CreateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
                     if (newTask is not null)
-                        _service.AddTask(newTask);
+                        _taskService.AddTask(newTask);
                     break;
                 case 1:
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(LoadAllDisplayTasks());
+                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskIdToRemove != -1)
-                        _service.RemoveTask(taskIdToRemove);
+                        _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(LoadAllDisplayTasks());
-                    
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate =
+                        _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                        _service.UpdateTask(taskToUpdate.Value.id, taskToUpdate.Value.updatedTask);
-                    
+                        _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id,
+                            taskToUpdate.Value.updatedTask);
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(LoadAllDisplayTasks());
+                    (int id, TaskStatus status)? taskToToggle =
+                        _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                        _service.ToggleTask(taskToToggle.Value.id, taskToToggle.Value.status);
+                        _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id,
+                            taskToToggle.Value.status);
                     
                     break;
                 case 4:
+                    (int id, int? assigneeId)? taskAssignment =
+                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), _session.CurrentUser!.Id, CanUserEdit);
+                    if (taskAssignment is not null)
+                        _taskService.AssignTask(taskAssignment.Value.id, _session.CurrentUser!.Id,
+                            taskAssignment.Value.assigneeId);
+                    break;
+                case 5:
                     _filtersMenu.SelectFilters();
+                    break;
+                case 7:
+                    User? newLogin = _userSelectionView.ChooseUser();
+                    if (newLogin is not null)
+                        _session.Login(newLogin);
                     break;
                 
                 default:
-                    return;
+                    Environment.Exit(0);
+                    break;
             }
         }
     }
@@ -82,9 +110,11 @@ public class ConsoleTaskView : ITaskView
             "Add Task",
             "Remove Task",
             "Update Task",
-            "Toggle Task State",
+            "Toggle Task Status",
+            "Assign/Reassign Task",
             "Apply filters",
             null,
+            "Change user",
             "Exit"
         ];
         
@@ -92,14 +122,56 @@ public class ConsoleTaskView : ITaskView
         return _menu.GetChoice(mainMenuOptions);
     }
 
-    private TaskDisplay[] LoadAllDisplayTasks()
+    private void DisplayActiveFilters()
     {
-        TaskItem[] tasks = _service.GetAllTasksSorted(_filters);
-        TaskDisplay[] displayTasks = new TaskDisplay[tasks.Length];
+        if (_filters.IsEmpty)
+            return;
+        
+        Console.WriteLine("\n=== Active filters ===");
+        
+        if (_filters.Priority is not null)
+            Console.WriteLine($"Priority    : {_filters.Priority}");
+        if (_filters.DueToFrom is not null || _filters.DueToTo is not null)
+        {
+            string dueToFilter = "";
 
-        for (int i = 0; i < tasks.Length; i++)
-            displayTasks[i] = TaskDisplay.FromTask(tasks[i]);
+            if (_filters.DueToFrom is not null)
+                dueToFilter += $"From: {_filters.DueToFrom:dd-MM-yyyy} ";
+        
+            if(_filters.DueToTo is not null)
+                dueToFilter += $"To: {_filters.DueToTo:dd-MM-yyyy}";
 
-        return displayTasks;
+            Console.WriteLine($"Due Date    : {dueToFilter}");
+        }
+        
+        if (_filters.CreatedAtFrom is not null || _filters.CreatedAtTo is not null)
+        {
+            string createdAtFilter = "";
+
+            if (_filters.CreatedAtFrom is not null)
+                createdAtFilter += $"From: {_filters.CreatedAtFrom:dd-MM-yyyy} ";
+        
+            if(_filters.CreatedAtTo is not null)
+                createdAtFilter += $"To: {_filters.CreatedAtTo:dd-MM-yyyy}";
+
+            Console.WriteLine($"Created at  : {createdAtFilter}");
+        }
+        
+        if (!string.IsNullOrEmpty(_filters.Keyword))
+            Console.WriteLine($"Keyword     : \"{_filters.Keyword}\"");
+        
+        if (_filters.Assignee != 0)
+            Console.WriteLine($"Assignee    : {_filters.AssigneeUsername}");
+        
+        if (_filters.ApplySort)
+            Console.WriteLine($"Sort        : {_filters.SortBy} ({_filters.SortOrder})");
     }
+
+    private IMyCollection<TaskItem> GetAllTasksFiltered()
+    {
+        return _taskService.GetAllTasksWithFilter(_filters);
+    }
+
+    private bool CanUserEdit(int taskId) => _taskService.CanUserEdit(taskId, _session.CurrentUser!.Id);
+    
 }

@@ -1,3 +1,4 @@
+using Project1.Models;
 using Project1.Models.ENums;
 using Project1.Models.ViewModels;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
@@ -6,11 +7,16 @@ namespace Project1.Views;
 
 public class AddTaskMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
+    private readonly UserSelectionView _userSelectionView;
+    private readonly Session _session;
 
-    public AddTaskMenu(ChoiceMenu<string> menu)
+    public AddTaskMenu(Session session, UserSelectionView userSelectionView)
     {
-        _menu = menu;
+        _menu = new ChoiceMenu();
+        
+        _session = session;
+        _userSelectionView = userSelectionView;
     }
     
     public CreateTaskModel? AddTask()
@@ -26,6 +32,7 @@ public class AddTaskMenu
                 $"Priority: {newCreateTask.Priority}",
                 $"Status: {newCreateTask.Status}",
                 $"Due To: {newCreateTask.DueTo:dd-MM-yyyy}",
+                $"Assigned To: {newCreateTask.AssigneeName}",
                 null,
                 "Add",
                 "Exit"
@@ -54,13 +61,26 @@ public class AddTaskMenu
                 case 3:
                     newCreateTask.DueTo = EnterDueToDate();
                     break;
-                case 5:
+                case 4:
+                    (int id, string name)? assignee = ChooseAssignmentAction();
+                    if (assignee.Value.id == 0)
+                    {
+                        newCreateTask.AssignedTo = null;
+                        newCreateTask.AssigneeName = assignee.Value.name;
+                    }
+                    else if (assignee.Value.id != -1)
+                    {
+                        newCreateTask.AssignedTo = assignee.Value.id;
+                        newCreateTask.AssigneeName = assignee.Value.name;
+                    }
+                    break;
+                case 6:
                     if (!IsValid(newCreateTask))
                         dataIncomplete = true;
                     else
                         return newCreateTask;
                     break;
-                case 6:
+                case 7:
                     return null;
                 default:
                     return null;
@@ -112,6 +132,41 @@ public class AddTaskMenu
             return date;
         
         return DateOnly.FromDateTime(DateTime.Now);
+    }
+    
+    private (int newAssigneeId, string name)? ChooseAssignmentAction()
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Enter new assignee ===\n");
+        string?[] choices = ["Unassigned", "Myself", "Another User", null, "Exit"];
+        
+        int option = _menu.GetChoice(choices);
+        switch (option)
+        {
+            case 0:
+                return (0, "Unassigned");
+                break;
+            case 1:
+                return (_session.CurrentUser!.Id, _session.CurrentUser.Username);
+                
+            case 2:
+                return ChooseAssignee();
+                
+            case 4:
+                return null;
+            
+            default:
+                return null;
+        }
+    }
+
+    private (int newAssigneeId, string name)? ChooseAssignee()
+    {
+        User? chosenUser = _userSelectionView.ChooseUser();
+        if (chosenUser is null)
+            return null;
+        
+        return (chosenUser.Id, chosenUser.Username);
     }
 
     private bool IsValid(CreateTaskModel newCreateTask)

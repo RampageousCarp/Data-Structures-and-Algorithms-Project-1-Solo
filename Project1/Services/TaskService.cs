@@ -8,25 +8,22 @@ using TaskStatus = Project1.Models.ENums.TaskStatus;
 namespace Project1.Services;
 class TaskService : ITaskService
 {
-    private readonly ITaskRepository _repository;
+    private readonly IGenericRepository<TaskItem> _repository;
     private readonly IMyCollection<TaskItem> _tasks;
     private readonly IMyCollectionFactory _collectionFactory;
+    private readonly IUserService _userService;
     private int _lastId;
     
-    public TaskService(ITaskRepository repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory)
+    public TaskService(IGenericRepository<TaskItem> repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory, IUserService userService)
     {
         _repository = repository;
         _tasks = collection;
         _collectionFactory = collectionFactory;
+        _userService = userService;
         _lastId = LoadLastId(_tasks.GetIterator());
     }
-    
-    public IEnumerable<TaskItem> GetAllTasks()
-    {
-        throw new NotImplementedException();
-    }
 
-    public TaskItem[] GetAllTasksSorted(TaskFilter? filter)
+    public IMyCollection<TaskItem> GetAllTasksWithFilter(TaskFilter? filter)
     {
         Func<TaskItem, bool> predicate = filter is null || filter.IsEmpty
             ? _ => true
@@ -37,23 +34,8 @@ class TaskService : ITaskService
         Comparison<TaskItem> comparison = BuildComparison(filter);
         
         filteredCollection.Sort(comparison);
-        
-        IMyIterator<TaskItem> tasks = filteredCollection.GetIterator();
-        tasks.Reset();
 
-        TaskItem[] tasksToReturn = new TaskItem[filteredCollection.Count];
-
-        int pos = -1;
-        while (tasks.HasNext())
-        
-            tasksToReturn[++pos] = tasks.Next();
-
-        return tasksToReturn;
-    }
-
-    public TaskItem GetTasks(TaskFilter? filter = null)
-    {
-        throw new NotImplementedException();
+        return filteredCollection;
     }
 
     public GroupedTasks GetGroupedTasks(TaskFilter? filter)
@@ -96,15 +78,9 @@ class TaskService : ITaskService
         todo.Sort(comparison);
         inProgress.Sort(comparison);
         done.Sort(comparison);
-        
-        return new GroupedTasks
-        {
-            Todo = MapToTableView(todo),
-            InProgress = MapToTableView(inProgress),
-            Done = MapToTableView(done)
-        };
-        
-        
+
+        return new GroupedTasks(todo, inProgress, done);
+
     }
 
     public void AddTask(CreateTaskModel createTaskData)
@@ -115,51 +91,80 @@ class TaskService : ITaskService
             Description = createTaskData.Description,
             Priority = createTaskData.Priority,
             Status = createTaskData.Status,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DueTo = createTaskData.DueTo,
+            AssignedTo = createTaskData.AssignedTo
         };
         
         _tasks.Add(newTask);
         _tasks.Dirty = true;
     }
 
-    public void RemoveTask(int id)
+    public bool RemoveTask(int id, int currentUserId)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
-        if (task is not null)
-        {
-            _tasks.Remove(task);
-            _tasks.Dirty = true;
-        }
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
+        
+        _tasks.Remove(task);
+        _tasks.Dirty = true;
+
+        return true;
+
     }
 
-    public void UpdateTask(int id, UpdateTaskModel updateTaskData)
+    public bool UpdateTask(int id, int currentUserId, UpdateTaskModel updateTaskData)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
-        if (task is null)
-            return;
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
 
         task.Description = updateTaskData.Description;
         task.Priority = updateTaskData.Priority;
         task.Status = updateTaskData.Status;
+        task.DueTo = updateTaskData.DueTo;
+        task.AssignedTo = updateTaskData.AssignedTo;
         
         _tasks.Dirty = true;
+
+        return true;
     }
 
-    public void ToggleTask(int id, TaskStatus newStatus)
+    public bool ToggleTask(int id, int currentUserId, TaskStatus newStatus)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id == key);
-        if (task is null)
-            return;
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
         
         task.Status = newStatus;
         
         _tasks.Dirty = true;
+        return true;
+    }
+
+    public bool AssignTask(int id, int currentUserId, int? newAssignee)
+    {
+        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
+            return false;
+
+        task.AssignedTo = newAssignee;
+        return true;
+    }
+
+    public bool CanUserEdit(int taskId, int currentUserId)
+    {
+        TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));
+        if (task is null)
+            return true;
+        
+        return (task.AssignedTo == currentUserId || task.AssignedTo is null) ;
     }
 
     public void SaveTasks()
     {
         if (_tasks.Dirty)
-            _repository.SaveTasks(_tasks.GetIterator(), _tasks.Count);
+            _repository.SaveItems(_tasks.GetIterator(), _tasks.Count);
         
         _tasks.Dirty = false;
     }
@@ -224,6 +229,19 @@ class TaskService : ITaskService
             predicate = task => prev(task) && task.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
         }
         
+        if (filter.Assignee != 0 && filter.Assignee != -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo == filter.Assignee;
+        }
+        
+        if (filter.Assignee == -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo is null;
+        }
+        
+        
         return predicate;
      }
 
@@ -249,21 +267,20 @@ class TaskService : ITaskService
          
          if (filter.SortBy == SortingValue.DueTo)
              return (t1, t2) => t1.DueTo.CompareTo(t2.DueTo) * order;
+         
+         if (filter.SortBy == SortingValue.Assignee)
+             return (t1, t2) =>
+             {
+                 var user1 = _userService.GetUserById(t1.AssignedTo.GetValueOrDefault());
+                 var user2 = _userService.GetUserById(t2.AssignedTo.GetValueOrDefault());
+
+                 string name1 = user1?.Username ?? "";
+                 string name2 = user2?.Username ?? "";
+
+                 return string.Compare(name1, name2, StringComparison.Ordinal) * order;
+             };
 
          return (t1, t2) => t1.Id.CompareTo(t2.Id);
      }
-
-    private TaskTableView[] MapToTableView(IMyCollection<TaskItem> tasks)
-    {
-        TaskTableView[] taskTableViews = new TaskTableView[tasks.Count];
-        
-        IMyIterator<TaskItem> iterator = tasks.GetIterator();
-        iterator.Reset();
-
-        int pos = -1;
-        while (iterator.HasNext())
-            taskTableViews[++pos] = TaskTableView.FromTask(iterator.Next());
-
-        return taskTableViews;
-    }
+    
 }

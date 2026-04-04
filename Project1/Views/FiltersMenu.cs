@@ -1,17 +1,23 @@
+using Project1.Models;
 using Project1.Models.ENums;
 using Project1.Models.ViewModels;
+using Project1.Services.Interfaces;
 
 namespace Project1.Views;
 
 public class FiltersMenu
 {
-    private readonly ChoiceMenu<string> _menu;
+    private readonly ChoiceMenu _menu;
     private TaskFilter _filters;
+    private UserSelectionView _userSelectionView;
+    private Session _session;
     
-    public FiltersMenu(ChoiceMenu<string> menu, TaskFilter filters)
+    public FiltersMenu(TaskFilter filters, UserSelectionView userSelectionView, Session session)
     {
-        _menu = menu;
+        _menu = new ChoiceMenu();
         _filters = filters;
+        _userSelectionView = userSelectionView;
+        _session = session;
     }
 
     public void SelectFilters()
@@ -42,19 +48,22 @@ public class FiltersMenu
                         break;
                    
                     _filters.CreatedAtFrom = creationDateFilter.Value.from;
-                    _filters.CreatedAtFrom = creationDateFilter.Value.to;
+                    _filters.CreatedAtTo = creationDateFilter.Value.to;
                     
                     break;
                 case 3:
                     EnterKeyword();
                     break;
                 case 4:
-                    EnterSortParameter();
+                    EnterAssigneeFilter();
                     break;
                 case 5:
+                    EnterSortParameter();
+                    break;
+                case 6:
                     EnterSortOrder();
                     break;
-                case 7:
+                case 8:
                     _filters.ResetFilters();
                     break;
                 
@@ -72,6 +81,7 @@ public class FiltersMenu
             $"Filter by Due To Date: {GetDueToFilterString()}",
             $"Filter by Creation Date: {GetCreationDateFilterString()}",
             $"Search by keyword: {_filters.Keyword ?? "---"}",
+            $"Filter by assignee: {(_filters.Assignee == 0 ? "---" : _filters.AssigneeUsername)}",
             $"Sort by: {(_filters.ApplySort ? _filters.SortBy : "---" )}",
             $"Sort order: {(_filters.ApplySort ? _filters.SortOrder : "---" )}",
             null,
@@ -263,5 +273,60 @@ public class FiltersMenu
             return date;
         
         return DateOnly.FromDateTime(DateTime.Now);
+    }
+
+    private void EnterAssigneeFilter()
+    {
+        var choice = ChooseAssigneeType();
+        if (choice is not null)
+        {
+            _filters.Assignee = choice.Value.id;
+            _filters.AssigneeUsername = choice.Value.username;
+        }
+
+    }
+
+    private (int id, string? username)? ChooseAssigneeType()
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Filter By Assignee ===");
+        Console.WriteLine($"Current filter: {(_filters.Assignee == 0 ? "---" : _filters.AssigneeUsername)}\n");
+
+        string?[] options =
+        [
+            "Myself",
+            "Unassigned",
+            "Another user",
+            null,
+            "Clear assignee filter",
+            "Exit"
+        ];
+
+        int option = _menu.GetChoice(options);
+        
+        switch (option)
+        {
+            case 0:
+                return (_session.CurrentUser!.Id, _session.CurrentUser.Username);
+            case 1:
+                return (-1, "Unassigned");
+            case 2:
+                User? chosenUser = ChooseUser();
+                if (chosenUser is null)
+                    return ChooseAssigneeType();
+                        
+                return (chosenUser.Id, chosenUser.Username);
+            
+            case 4:
+                return (0, null);
+                
+            default:
+                return null;
+        }
+    }
+
+    private User? ChooseUser()
+    {
+        return _userSelectionView.ChooseUser();
     }
 }

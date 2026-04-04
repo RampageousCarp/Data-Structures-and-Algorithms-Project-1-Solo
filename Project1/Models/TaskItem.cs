@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Project1.Models.ENums;
+using Project1.Models.Interfaces;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Models;
@@ -33,5 +34,10 @@ public class TaskItem
     public bool Completed => Status == TaskStatus.Done;
 
     public DateTime CreatedAt { get; set; }
+    
     public DateOnly DueTo { get; set; }
+    
+    public int? AssignedTo { get; set; }
+    
+    public T ConvertTo<T>() where T : IFromTaskItem<T> => T.FromTask(this);
 }

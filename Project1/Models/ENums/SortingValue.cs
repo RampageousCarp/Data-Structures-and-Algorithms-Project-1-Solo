@@ -6,5 +6,6 @@ public enum SortingValue
     Description,
     Priority,
     CreatedAt,
-    DueTo
+    DueTo,
+    Assignee
 }

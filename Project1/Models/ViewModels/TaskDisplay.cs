@@ -1,4 +1,5 @@
 using Project1.Models.ENums;
+using Project1.Models.Interfaces;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Models.ViewModels;
@@ -10,22 +11,15 @@ public class TaskDisplay
     public TaskPriority Priority { get; set; }
     public TaskStatus Status { get; set; }
     public DateOnly DueTo { get; set; }
-    
-    public static TaskDisplay FromTask(TaskItem task) => new TaskDisplay
-    {
-        Id = task.Id,
-        Description = task.Description,
-        Priority = task.Priority,
-        Status = task.Status,
-        DueTo = task.DueTo
-    };
+    public string AssigneeName { get; set; } = "Unassigned";
 
-    public string ToMenuString()
+    public override string ToString()
     {
         string display = $"#{Id} {Description}\n";
         display += $"Priority: {Priority}\n";
         display += $"Status: {Status}\n";
         display += $"Due To: {DueTo:dd-MM-yyyy}\n";
+        display += $"Assigned to: {AssigneeName}\n";
         
         return display;
     }
