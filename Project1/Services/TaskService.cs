@@ -152,9 +152,18 @@ class TaskService : ITaskService
         return true;
     }
 
-    public bool UnassignUser(int userId)
+    public void UnassignUser(int userId)
     {
-        throw new NotImplementedException();
+        IMyIterator<TaskItem> iterator = _tasks.GetIterator();
+        iterator.Reset();
+        while (iterator.HasNext())
+        {
+            TaskItem task = iterator.Next();
+            if (task.AssignedTo == userId)
+                task.AssignedTo = null;
+        }
+
+        _tasks.Dirty = true;
     }
 
     public bool CanUserEdit(int taskId, int currentUserId)

@@ -116,9 +116,11 @@ public class UserManagementView
         User? userToDelete = _userSelectionView.ChooseUser();
 
         if (userToDelete is null) return;
-        
+
         if (ConfirmRemove(userToDelete))
-            _userService.RemoveUser(userToDelete.Id);
+        {
+            _onUserDeleted(userToDelete.Id);
+        }
     }
     
     private bool ConfirmRemove(User user)
