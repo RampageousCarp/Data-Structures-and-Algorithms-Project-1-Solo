@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ViewModels;
 using Project1.Repositories.Interfaces;
 using Project1.Services.Interfaces;
 
@@ -38,7 +39,17 @@ public class UserService : IUserService
 
         return user;
     }
-    
+
+    public User AddUser(CreateUserModel user)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool RemoveUser(int id)
+    {
+        throw new NotImplementedException();
+    }
+
     private int LoadLastId(IMyIterator<User> items)
     {
         items.Reset();

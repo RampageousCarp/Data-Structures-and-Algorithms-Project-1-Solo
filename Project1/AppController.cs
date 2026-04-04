@@ -1,4 +1,5 @@
 using Project1.Models;
+using Project1.Models.ENums;
 using Project1.Services.Interfaces;
 using Project1.Views;
 
@@ -23,24 +24,14 @@ public class AppController
         {
             if (!_session.IsLoggedIn)
             {
-                bool shouldExit = RunUserSelectionView();
-                if (shouldExit) return;
+                StartMenuView startMenu = new StartMenuView(_userService, _taskService, _session);
+                StartMenuResult result = startMenu.Run();
+                if (result == StartMenuResult.Exit)
+                    return;
             }
             else
                 RunTaskView();
         }
-    }
-
-    private bool RunUserSelectionView()
-    {
-        UserSelectionView userView = new UserSelectionView(_userService);
-        User? selectedUser = userView.ChooseUser();
-        
-        if (selectedUser is null)
-            return true;
-        
-        _session.Login(selectedUser);
-        return false;
     }
 
     private void RunTaskView()

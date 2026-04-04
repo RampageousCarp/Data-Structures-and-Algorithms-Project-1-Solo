@@ -152,6 +152,11 @@ class TaskService : ITaskService
         return true;
     }
 
+    public bool UnassignUser(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
     public bool CanUserEdit(int taskId, int currentUserId)
     {
         TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));

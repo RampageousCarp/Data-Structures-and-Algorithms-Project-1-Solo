@@ -13,6 +13,7 @@ public interface ITaskService
     bool UpdateTask(int id, int currentUserId, UpdateTaskModel updateTaskData);
     bool ToggleTask(int id, int currentUserId, TaskStatus newStatus);
     bool AssignTask(int id, int currentUserId, int? newAssignee);
+    bool UnassignUser(int userId);
     bool CanUserEdit(int taskId, int currentUserId);
     void SaveTasks();
 }
