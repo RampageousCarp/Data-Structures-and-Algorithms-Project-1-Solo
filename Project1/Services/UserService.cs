@@ -51,7 +51,7 @@ public class UserService : IUserService
         };
         
         _users.Add(newUser);
-        _users.Dirty = true;
+        _users.IncreaseDirty();
 
         SaveChanges();
     }
@@ -63,7 +63,7 @@ public class UserService : IUserService
             return ;
         
         _users.Remove(user);
-        _users.Dirty = true;
+        _users.IncreaseDirty();
 
         SaveChanges();
     }
@@ -85,6 +85,9 @@ public class UserService : IUserService
     public void SaveChanges()
     {
         if (_users.Dirty)
+        {
             _repository.SaveItems(_users.GetIterator(), _users.Count);
+            _users.ResetDirty();
+        }
     }
 }
