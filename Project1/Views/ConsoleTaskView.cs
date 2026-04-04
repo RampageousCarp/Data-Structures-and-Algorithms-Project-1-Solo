@@ -15,11 +15,12 @@ public class ConsoleTaskView : ITaskView
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
+    private readonly AssignTaskMenu _assignTaskMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
     private readonly FiltersMenu _filtersMenu;
     private readonly UserSelectionView _userSelectionView;
     
-    private readonly TaskDisplayMapper _dislayMapper;
+    private readonly TaskDisplayMapper _displayMapper;
     
     private TaskFilter _filters;
     
@@ -31,12 +32,13 @@ public class ConsoleTaskView : ITaskView
         _filters = new TaskFilter();
         
         _menu = new ChoiceMenu();
-        _dislayMapper = new TaskDisplayMapper(userService);
+        _displayMapper = new TaskDisplayMapper(userService);
         _userSelectionView = new UserSelectionView(userService);
         _addUpdateTaskMenu = new AddTaskMenu(session, _userSelectionView);
-        _removeTaskMenu = new RemoveTaskMenu(_dislayMapper);
-        _updateTaskMenu = new UpdateTaskMenu(_dislayMapper, _userSelectionView, userService.GetUserById);
-        _toggleTaskMenu = new ToggleTaskMenu(_dislayMapper);
+        _removeTaskMenu = new RemoveTaskMenu(_displayMapper);
+        _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
+        _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
+        _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
         _boardDisplay = new KanbanBoardDisplay(userService);
         _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
     }
@@ -64,20 +66,31 @@ public class ConsoleTaskView : ITaskView
                         _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate = _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
+                    (int id, UpdateTaskModel updatedTask)? taskToUpdate =
+                        _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                        _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id, taskToUpdate.Value.updatedTask);
+                        _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id,
+                            taskToUpdate.Value.updatedTask);
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle = _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
+                    (int id, TaskStatus status)? taskToToggle =
+                        _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
                     if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                        _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id, taskToToggle.Value.status);
+                        _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id,
+                            taskToToggle.Value.status);
                     
                     break;
                 case 4:
+                    (int id, int? assigneeId)? taskAssignment =
+                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), CanUserEdit);
+                    if (taskAssignment is not null)
+                        _taskService.AssignTask(taskAssignment.Value.id, _session.CurrentUser!.Id,
+                            taskAssignment.Value.assigneeId);
+                    break;
+                case 5:
                     _filtersMenu.SelectFilters();
                     break;
-                case 6:
+                case 7:
                     User? newLogin = _userSelectionView.ChooseUser();
                     if (newLogin is not null)
                         _session.Login(newLogin);
@@ -98,6 +111,7 @@ public class ConsoleTaskView : ITaskView
             "Remove Task",
             "Update Task",
             "Toggle Task Status",
+            "Assign/Reassign Task",
             "Apply filters",
             null,
             "Change user",

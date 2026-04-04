@@ -29,12 +29,12 @@ public class RemoveTaskMenu
             if (menuItems[selectedIndex].IsAction)
                 return -1;
             
-            if (canEdit(menuItems[selectedIndex].Value.Id))
+            if (canEdit(menuItems[selectedIndex].Value!.Id))
                 result = menuItems[selectedIndex].Value!.Id;
             else
-                RemoveBlocked(menuItems[selectedIndex].Value);
+                RemoveBlocked(menuItems[selectedIndex].Value!);
 
-            if (ConfirmRemove(_displayMapper.Map(menuItems[selectedIndex].Value!)))
+            if (result != -1 && ConfirmRemove(_displayMapper.Map(menuItems[selectedIndex].Value!)))
                 return result;
         }
     }
