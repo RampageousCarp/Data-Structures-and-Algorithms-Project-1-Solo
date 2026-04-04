@@ -97,7 +97,7 @@ class TaskService : ITaskService
         };
         
         _tasks.Add(newTask);
-        _tasks.Dirty = true;
+        _tasks.IncreaseDirty();
     }
 
     public bool RemoveTask(int id, int currentUserId)
@@ -107,7 +107,7 @@ class TaskService : ITaskService
             return false;
         
         _tasks.Remove(task);
-        _tasks.Dirty = true;
+        _tasks.IncreaseDirty();
 
         return true;
 
@@ -125,7 +125,7 @@ class TaskService : ITaskService
         task.DueTo = updateTaskData.DueTo;
         task.AssignedTo = updateTaskData.AssignedTo;
         
-        _tasks.Dirty = true;
+        _tasks.IncreaseDirty();
 
         return true;
     }
@@ -138,7 +138,7 @@ class TaskService : ITaskService
         
         task.Status = newStatus;
         
-        _tasks.Dirty = true;
+        _tasks.IncreaseDirty();
         return true;
     }
 
@@ -163,12 +163,12 @@ class TaskService : ITaskService
                 task.AssignedTo = null;
         }
 
-        _tasks.Dirty = true;
+        _tasks.IncreaseDirty();
     }
 
     public bool CanUserEdit(int taskId, int currentUserId)
     {
-        TaskItem? task = _tasks.FindBy<int>(taskId, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
         if (task is null)
             return true;
         
@@ -180,7 +180,7 @@ class TaskService : ITaskService
         if (_tasks.Dirty)
             _repository.SaveItems(_tasks.GetIterator(), _tasks.Count);
         
-        _tasks.Dirty = false;
+        _tasks.IncreaseDirty();
     }
 
     private int LoadLastId(IMyIterator<TaskItem> items)

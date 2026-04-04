@@ -7,7 +7,10 @@ public interface IMyCollection<T> {
     IMyCollection<T> Filter(Func<T, bool> predicate);
     void Sort(Comparison<T> comparison);
     int Count { get; }
-    bool Dirty {get; set;}
+    bool Dirty { get; }
+    void IncreaseDirty();
+    void ResetDirty();
+    int GetDirtyCount();
     R Reduce<R>(Func<R, T, R> accumulator);
     // OR
     R Reduce<R>(R initial, Func<R, T, R> accumulator);

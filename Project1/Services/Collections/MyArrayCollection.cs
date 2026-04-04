@@ -7,6 +7,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
     protected T[] _items;
     protected int _count;
     protected bool _dirty = false;
+    protected int _dirtyCount { get; set; }
     private const long DEFAULT_CAPACITY = 64;
     
     public MyArrayCollection()
@@ -97,12 +98,22 @@ public class MyArrayCollection<T> : IMyCollection<T>
     
     public int Count => _count;
 
-    public bool Dirty
+    public bool Dirty => _dirty;
+
+    public void IncreaseDirty()
     {
-        get => _dirty;
-        set => _dirty = value;
+        _dirty = true;
+        _dirtyCount++;
     }
-    
+
+    public void ResetDirty()
+    {
+        _dirty = false;
+        _dirtyCount = 0;
+    }
+
+    public int GetDirtyCount() => _dirtyCount;
+
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
         R acc = default(R);

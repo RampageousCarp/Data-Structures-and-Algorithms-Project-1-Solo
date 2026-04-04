@@ -51,7 +51,7 @@ public class UserService : IUserService
         };
         
         _users.Add(newUser);
-        _users.Dirty = true;
+        _users.IncreaseDirty();
 
         SaveChanges();
     }
@@ -63,7 +63,7 @@ public class UserService : IUserService
             return ;
         
         _users.Remove(user);
-        _users.Dirty = true;
+        _users.IncreaseDirty();
 
         SaveChanges();
     }
