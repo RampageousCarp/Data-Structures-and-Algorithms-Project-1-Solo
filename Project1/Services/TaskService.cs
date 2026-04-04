@@ -13,6 +13,8 @@ class TaskService : ITaskService
     private readonly IMyCollectionFactory _collectionFactory;
     private readonly IUserService _userService;
     private int _lastId;
+
+    private const int DIRTY_LIMIT = 10;
     
     public TaskService(IGenericRepository<TaskItem> repository, IMyCollection<TaskItem> collection, IMyCollectionFactory collectionFactory, IUserService userService)
     {
@@ -98,6 +100,7 @@ class TaskService : ITaskService
         
         _tasks.Add(newTask);
         _tasks.IncreaseDirty();
+        AutoSave();
     }
 
     public bool RemoveTask(int id, int currentUserId)
@@ -107,7 +110,9 @@ class TaskService : ITaskService
             return false;
         
         _tasks.Remove(task);
+        
         _tasks.IncreaseDirty();
+        AutoSave();
 
         return true;
 
@@ -126,6 +131,7 @@ class TaskService : ITaskService
         task.AssignedTo = updateTaskData.AssignedTo;
         
         _tasks.IncreaseDirty();
+        AutoSave();
 
         return true;
     }
@@ -139,6 +145,8 @@ class TaskService : ITaskService
         task.Status = newStatus;
         
         _tasks.IncreaseDirty();
+        AutoSave();
+        
         return true;
     }
 
@@ -149,6 +157,10 @@ class TaskService : ITaskService
             return false;
 
         task.AssignedTo = newAssignee;
+        
+        _tasks.IncreaseDirty();
+        AutoSave();
+        
         return true;
     }
 
@@ -164,6 +176,7 @@ class TaskService : ITaskService
         }
 
         _tasks.IncreaseDirty();
+        AutoSave();
     }
 
     public bool CanUserEdit(int taskId, int currentUserId)
@@ -180,7 +193,14 @@ class TaskService : ITaskService
         if (_tasks.Dirty)
             _repository.SaveItems(_tasks.GetIterator(), _tasks.Count);
         
-        _tasks.IncreaseDirty();
+        _tasks.ResetDirty();
+    }
+
+    private void AutoSave()
+    {
+        if (_tasks.GetDirtyCount() >= DIRTY_LIMIT)
+            SaveTasks();
+        
     }
 
     private int LoadLastId(IMyIterator<TaskItem> items)

@@ -85,6 +85,9 @@ public class UserService : IUserService
     public void SaveChanges()
     {
         if (_users.Dirty)
+        {
             _repository.SaveItems(_users.GetIterator(), _users.Count);
+            _users.ResetDirty();
+        }
     }
 }
