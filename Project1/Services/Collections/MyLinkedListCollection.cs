@@ -33,7 +33,17 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public void Remove(T item)
     {
-        throw new NotImplementedException();
+        Node? current = _tail;
+        while (current != null)
+        {
+            if (current.Data!.Equals(item))
+            {
+                Unlink(current);
+                return;
+            }
+
+            current = current.Next;
+        }
     }
 
     public T? FindBy<K>(K key, Func<T, K, int> comparer)
@@ -101,6 +111,21 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
         }
 
         _count++;
+    }
+
+    private void Unlink(Node node)
+    {
+        if (node.Prev != null)
+            node.Prev.Next = node.Next;
+        else
+            _head = node.Next;
+        
+        if (node.Next != null)
+            node.Next.Prev = node.Prev;
+        else
+            _tail = node.Prev;
+
+        _count--;
     }
 
     #endregion
