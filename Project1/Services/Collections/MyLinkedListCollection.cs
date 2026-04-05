@@ -27,7 +27,8 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public void Add(T item)
     {
-        throw new NotImplementedException();
+        AddLast(item);
+        SetDirty();
     }
 
     public void Remove(T item)
@@ -85,10 +86,21 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
     #endregion
 
     #region Helpers
+    
+    private void SetDirty() => _dirty = true;
 
     private void AddLast(T item)
     {
-        throw new NotImplementedException();
+        Node newNode = new Node(item, _tail, null);
+        if (_tail == null)
+            _head = _tail = newNode;
+        else
+        {
+            _tail.Next = newNode;
+            _tail = newNode;
+        }
+
+        _count++;
     }
 
     #endregion
