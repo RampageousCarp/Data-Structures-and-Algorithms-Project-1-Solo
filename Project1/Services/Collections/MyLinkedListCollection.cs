@@ -48,7 +48,17 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public T? FindBy<K>(K key, Func<T, K, int> comparer)
     {
-        throw new NotImplementedException();
+        Node? current = _head;
+
+        while (current is not null)
+        {
+            if (comparer(current.Data, key) == 0)
+                return current.Data;
+
+            current = current.Next;
+        }
+
+        return default;
     }
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
