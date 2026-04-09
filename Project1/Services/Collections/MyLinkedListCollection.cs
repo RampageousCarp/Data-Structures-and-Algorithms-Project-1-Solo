@@ -63,12 +63,26 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
-        throw new NotImplementedException();
+        MyLinkedListCollection<T> filteredCollection = new MyLinkedListCollection<T>();
+
+        Node? current = _head;
+
+        while (current is not null)
+        {
+            if (predicate(current.Data))
+                filteredCollection.Add(current.Data);
+            current = current.Next;
+        }
+
+        return filteredCollection;
     }
 
     public void Sort(Comparison<T> comparison)
     {
-        throw new NotImplementedException();
+        if (_count > 1)
+            _head = MergeSort(_head, comparison);
+        
+        RepairPrevOrder();
     }
 
     public int Count { get; }
@@ -136,6 +150,74 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
             _tail = node.Prev;
 
         _count--;
+    }
+
+    private Node? MergeSort(Node? head, Comparison<T> comparison)
+    {
+        if (head?.Next == null)
+            return head;
+
+        Node? mid = GetMiddle(head);
+        Node? secondHalf = mid!.Next;
+        mid.Next = null;
+
+        Node? left  = MergeSort(head, comparison);
+        Node? right = MergeSort(secondHalf, comparison);
+
+        return Merge(left, right, comparison);
+    }
+
+    private static Node? GetMiddle(Node? head)
+    {
+        Node? slow = head;
+        Node? fast = head?.Next;
+
+        while (fast?.Next != null)
+        {
+            slow = slow!.Next;
+            fast = fast.Next.Next;
+        }
+
+        return slow;
+    }
+
+    private Node? Merge(Node left, Node right, Comparison<T> comparison)
+    {
+        Node dummy = new(default!);
+        Node? tail = dummy;
+
+        while (left != null && right != null)
+        {
+            if (comparison(left.Data, right.Data) <= 0)
+            {
+                tail.Next = left;
+                left = left.Next;
+            }
+            else
+            {
+                tail.Next = right;
+                right = right.Next;
+            }
+            tail = tail.Next;
+        }
+
+        tail.Next = left ?? right;
+        return dummy.Next;
+    }
+
+    private void RepairPrevOrder()
+    {
+        Node? current = _head;
+        Node? prev = null;
+
+        while (current != null)
+        {
+            current.Prev = prev;
+            prev = current;
+            current = current.Next;
+        }
+
+        _tail = prev;
     }
 
     #endregion
