@@ -134,10 +134,8 @@ public class MyArrayCollection<T> : IMyCollection<T>
         return acc;
     }
 
-    public IMyIterator<T> GetIterator()
-    {
-        return new ArrayCollectionIterator<T>(this);
-    }
+    public IMyIterator<T> GetIterator() => new ArrayCollectionIterator(this);
+    
     #endregion
 
     #region Helpers
@@ -198,7 +196,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
 
     #region InnerClass
 
-    private class ArrayCollectionIterator<T> : IMyIterator<T>
+    private class ArrayCollectionIterator : IMyIterator<T>
     {
         private readonly MyArrayCollection<T> _collection;
         private int _currentIndex;

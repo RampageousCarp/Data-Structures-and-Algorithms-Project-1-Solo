@@ -6,6 +6,7 @@ using Project1.Services;
 using Project1.Services.Collections;
 using Project1.Services.Factories;
 using Project1.Services.Interfaces;
+using Project1.Views;
 
 class Program
 {
@@ -13,13 +14,22 @@ class Program
     {
         // Dependency injection: wiring up our components
         Session session = new Session();
-        IMyCollectionFactory collectionFactory = new MyArrayCollectionFactory();
+        string[] collectionTypes = ["Array", "Linked List", "Hash Table", "Binary Tree"];
+        int collectionChoice = new ChoiceMenu().GetChoice(collectionTypes, true, $"=== Choose Collection Type ===\n\n");
+        
+        IMyCollectionFactory collectionFactory = collectionChoice switch
+        {
+            0 => new MyArrayCollectionFactory(),
+            1 => new MyLinkedListCollectionFactory(),
+            // 2 => new MyHashTableCollectionFactory(),
+            // 3 => new MyBinaryTreeCollectionFactory(),
+        };
         
         string usersFilePath = "Repositories/JSON/users.json";
         IGenericRepository<User> usersRepository = new JsonGenericRepository<User>(usersFilePath);
         User[] loadedUsers = usersRepository.LoadItems();
         IMyIterator<User> usersIterator = new ArrayIterator<User>(loadedUsers, loadedUsers.Length);
-        IMyCollection<User> usersCollection = new MyArrayCollection<User>(usersIterator);
+        IMyCollection<User> usersCollection = collectionFactory.Create(usersIterator);
         
         IUserService userService = new UserService(usersRepository, usersCollection, collectionFactory);
         
@@ -29,7 +39,7 @@ class Program
         
         TaskItem[] loadedTasks = tasksRepository.LoadItems();
         IMyIterator<TaskItem> tasksIterator = new ArrayIterator<TaskItem>(loadedTasks, loadedTasks.Length);
-        IMyCollection<TaskItem> taskCollection = new MyArrayCollection<TaskItem>(tasksIterator);
+        IMyCollection<TaskItem> taskCollection = collectionFactory.Create(tasksIterator);
         
         ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory, userService);
 
