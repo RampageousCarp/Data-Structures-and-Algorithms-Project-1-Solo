@@ -88,8 +88,12 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
     public int Count => _count;
     
     public bool Dirty => _dirty;
-    
-    public void IncreaseDirty() => _dirtyCount++;
+
+    public void IncreaseDirty()
+    {
+        _dirty = true;
+        _dirtyCount++;
+    }
     
     public void ResetDirty()
     {
@@ -101,12 +105,30 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        R acc = default(R);
+        Node? current = _head;
+
+        while (current is not null)
+        {
+            acc = accumulator(acc, current.Data);
+            current = current.Next;
+        }
+
+        return acc;
     }
 
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        R acc = initial;
+        Node? current = _head;
+
+        while (current is not null)
+        {
+            acc = accumulator(acc, current.Data);
+            current = current.Next;
+        }
+
+        return acc;
     }
 
     public IMyIterator<T> GetIterator() => new MyLinkedListCollectionIterator(this);
