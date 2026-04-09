@@ -109,10 +109,7 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
         throw new NotImplementedException();
     }
 
-    public IMyIterator<T> GetIterator()
-    {
-        throw new NotImplementedException();
-    }
+    public IMyIterator<T> GetIterator() => new MyLinkedListCollectionIterator(this);
 
     #endregion
 
