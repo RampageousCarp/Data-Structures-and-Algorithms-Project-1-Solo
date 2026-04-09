@@ -85,22 +85,19 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
         RepairPrevOrder();
     }
 
-    public int Count { get; }
-    public bool Dirty { get; }
-    public void IncreaseDirty()
-    {
-        throw new NotImplementedException();
-    }
-
+    public int Count => _count;
+    
+    public bool Dirty => _dirty;
+    
+    public void IncreaseDirty() => _dirtyCount++;
+    
     public void ResetDirty()
     {
-        throw new NotImplementedException();
+        _dirtyCount = 0;
+        _dirty = false;
     }
 
-    public int GetDirtyCount()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetDirtyCount() => _dirtyCount;
 
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
