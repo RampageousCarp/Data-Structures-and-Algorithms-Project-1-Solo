@@ -67,8 +67,8 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             throw new NotImplementedException();
         }
 
-        public int Count { get; }
-        public bool Dirty { get; }
+        public int Count => _count;
+        public bool Dirty => _dirty;
         public void IncreaseDirty()
         {
             _dirty = true;
