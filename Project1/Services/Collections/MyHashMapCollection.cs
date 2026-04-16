@@ -9,6 +9,7 @@ public class MyHashMapCollection<T> : IMyCollection<T>
     private int _count;
     private bool _dirty;
     private int _dirtyCount;
+    private bool _isSorted = false;
 
     private const int DEFAULT_CAPACITY = 16;
     private const double LOAD_FACTOR = 0.75;
@@ -31,7 +32,10 @@ public class MyHashMapCollection<T> : IMyCollection<T>
     
         public void Add(T item)
         {
-            throw new NotImplementedException();
+            ResizeIfNeeded();
+            InsertNode(item);
+            
+            IncreaseDirty();
         }
 
         public void Remove(T item)
@@ -89,6 +93,61 @@ public class MyHashMapCollection<T> : IMyCollection<T>
     #endregion
 
     #region Helpers
+
+
+    private int GetBucketIndex(T item)
+    {
+        int hash = item!.GetHashCode();
+
+        return Math.Abs(hash) % _buckets.Length;
+    }
+    
+    private void ResizeIfNeeded()
+    {
+        if (_count < _buckets.Length * LOAD_FACTOR)
+            return;
+
+        Node?[] oldBuckets = _buckets;
+
+        _buckets = new Node?[oldBuckets.Length * 2];
+
+        for (int i = 0; i < oldBuckets.Length; i++)
+        {
+            Node? current = oldBuckets[i];
+            while (current != null)
+            {
+                InsertNode(current.Data);
+                current = current.Next;
+            }
+        }
+    }
+
+    private void InsertNode(T? item)
+    {
+        int index = GetBucketIndex(item!);
+
+        Node? current = _buckets[index];
+
+        if (current == null)
+        {
+            _buckets[index] = new Node(item!);
+            return;
+        }
+
+        while (current.Next != null)
+        {
+            if (current.Data!.Equals(index))
+                return;
+
+            current = current.Next;
+        }
+
+        if (!current.Data!.Equals(item))
+        {
+            current.Next = new Node(item!);
+            _count++;
+        }
+    }
 
     #endregion
     
