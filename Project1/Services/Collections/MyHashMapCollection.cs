@@ -10,6 +10,9 @@ public class MyHashMapCollection<T> : IMyCollection<T>
     private bool _dirty;
     private int _dirtyCount;
     private bool _isSorted = false;
+    
+    private T[]? _sortedSnapshot;
+    private Comparison<T>? _sortComparison;
 
     private const int DEFAULT_CAPACITY = 16;
     private const double LOAD_FACTOR = 0.75;
@@ -36,6 +39,7 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             InsertNode(item);
             
             IncreaseDirty();
+            InvalidateSnapshot();
         }
 
         public void Remove(T item)
@@ -53,8 +57,13 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             throw new NotImplementedException();
         }
 
-        public void Sort(Comparison<T> comparison)
+        public void Sort(Comparison<T>? comparison)
         {
+            if (comparison == null)
+            {
+                _isSorted = false;
+                return;
+            }
             throw new NotImplementedException();
         }
 
@@ -62,18 +71,17 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         public bool Dirty { get; }
         public void IncreaseDirty()
         {
-            throw new NotImplementedException();
+            _dirty = true;
+            _dirtyCount++;
         }
 
         public void ResetDirty()
         {
-            throw new NotImplementedException();
+            _dirty = false;
+            _dirtyCount = 0;
         }
 
-        public int GetDirtyCount()
-        {
-            throw new NotImplementedException();
-        }
+        public int GetDirtyCount() => _dirtyCount;
 
         public R Reduce<R>(Func<R, T, R> accumulator)
         {
@@ -87,7 +95,9 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
         public IMyIterator<T> GetIterator()
         {
-            throw new NotImplementedException();
+            return _isSorted && _sortedSnapshot != null
+                ? new SortedSnapshotIterator(_sortedSnapshot)
+                : new MyHashMapCollectionIterator(this);
         }
     
     #endregion
@@ -147,6 +157,13 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             current.Next = new Node(item!);
             _count++;
         }
+    }
+
+    private void InvalidateSnapshot()
+    {
+        _sortedSnapshot = null;
+        _isSorted = false;
+        _sortComparison = null;
     }
 
     #endregion
@@ -241,6 +258,24 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
             return null;
         }
+    }
+    
+    private class SortedSnapshotIterator : IMyIterator<T>
+    {
+
+        private readonly T[] _snapshot;
+        private int _index = -1;
+        
+        public SortedSnapshotIterator(T[] snapshot)
+        {
+            _snapshot = snapshot;
+        }
+
+        public bool HasNext() => _index + 1 < _snapshot.Length;
+
+        public T Next() => _snapshot[++_index];
+
+        public void Reset() => _index = -1;
     }
     #endregion
 }
