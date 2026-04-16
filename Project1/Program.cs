@@ -14,14 +14,14 @@ class Program
     {
         // Dependency injection: wiring up our components
         Session session = new Session();
-        string[] collectionTypes = ["Array", "Linked List", "Hash Table", "Binary Tree"];
+        string[] collectionTypes = ["Array", "Linked List", "Hash Map", "Binary Tree"];
         int collectionChoice = new ChoiceMenu().GetChoice(collectionTypes, true, $"=== Choose Collection Type ===\n\n");
         
         IMyCollectionFactory collectionFactory = collectionChoice switch
         {
             0 => new MyArrayCollectionFactory(),
             1 => new MyLinkedListCollectionFactory(),
-            // 2 => new MyHashTableCollectionFactory(),
+            2 => new MyHashMapCollectionFactory(),
             // 3 => new MyBinaryTreeCollectionFactory(),
         };
         
