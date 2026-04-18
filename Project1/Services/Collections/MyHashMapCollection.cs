@@ -47,7 +47,26 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
         public void Remove(T item)
         {
-            throw new NotImplementedException();
+            int index = GetBucketIndex(item);
+            Node? current = _buckets[index];
+            Node? prev = null;
+
+            while (current != null)
+            {
+                if (current!.Data.Equals(item))
+                {
+                    if (prev == null)
+                        _buckets[index] = current.Next;
+                    else
+                        prev.Next = current.Next;
+                    _count--;
+                    InvalidateSnapshot();
+                    return;
+                }
+
+                prev = current;
+                current = current.Next;
+            }
         }
 
         public T? FindBy<K>(K key, Func<T, K, int> comparer)
