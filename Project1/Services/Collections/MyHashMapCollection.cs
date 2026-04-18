@@ -71,7 +71,19 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
         public T? FindBy<K>(K key, Func<T, K, int> comparer)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < _buckets.Length; i++)
+            {
+                Node? current = _buckets[i];
+                while (current != null)
+                {
+                    if (comparer(current.Data, key) == 0)
+                        return current.Data;
+
+                    current = current.Next;
+                }
+            }
+
+            return default!;
         }
 
         public IMyCollection<T> Filter(Func<T, bool> predicate)
