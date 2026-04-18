@@ -36,10 +36,13 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         public void Add(T item)
         {
             ResizeIfNeeded();
-            InsertNode(item);
-            
-            IncreaseDirty();
-            InvalidateSnapshot();
+            bool inserted = InsertNode(item);
+    
+            if (inserted)
+            {
+                IncreaseDirty();
+                InvalidateSnapshot();
+            }
         }
 
         public void Remove(T item)
@@ -64,7 +67,14 @@ public class MyHashMapCollection<T> : IMyCollection<T>
                 _isSorted = false;
                 return;
             }
-            throw new NotImplementedException();
+            if (_isSorted) return;
+            
+            T[] items = ToArray();
+            QuickSort(items, 0, _count - 1, comparison);
+
+            _sortedSnapshot = items;        // snapshot stored
+            _sortComparison = comparison;
+            _isSorted = true;
         }
 
         public int Count => _count;
@@ -104,6 +114,19 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
     #region Helpers
 
+    private T[] ToArray()
+    {
+        T[] arrayItems = new T[_count];
+
+        MyHashMapCollectionIterator iterator = new MyHashMapCollectionIterator(this);
+
+        iterator.Reset();
+        int p = 0;
+        while (iterator.HasNext())
+            arrayItems[p++] = iterator.Next();
+
+        return arrayItems;
+    }
 
     private int GetBucketIndex(T item)
     {
@@ -120,6 +143,7 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         Node?[] oldBuckets = _buckets;
 
         _buckets = new Node?[oldBuckets.Length * 2];
+        _count = 0;
 
         for (int i = 0; i < oldBuckets.Length; i++)
         {
@@ -132,22 +156,22 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         }
     }
 
-    private void InsertNode(T? item)
+    private bool InsertNode(T? item)
     {
         int index = GetBucketIndex(item!);
-
         Node? current = _buckets[index];
 
         if (current == null)
         {
             _buckets[index] = new Node(item!);
-            return;
+            _count++;
+            return true;
         }
 
         while (current.Next != null)
         {
-            if (current.Data!.Equals(index))
-                return;
+            if (current.Data!.Equals(item))
+                return false;
 
             current = current.Next;
         }
@@ -156,7 +180,10 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         {
             current.Next = new Node(item!);
             _count++;
+            return true;
         }
+
+        return false;
     }
 
     private void InvalidateSnapshot()
@@ -164,6 +191,31 @@ public class MyHashMapCollection<T> : IMyCollection<T>
         _sortedSnapshot = null;
         _isSorted = false;
         _sortComparison = null;
+    }
+    
+    private void QuickSort(T[] items, int low, int high, Comparison<T> comparison)
+    {
+        if (low < high)
+        {
+            int pivotPosition = Partition(items, low, high, comparison);
+            QuickSort(items, low, pivotPosition - 1, comparison);
+            QuickSort(items,pivotPosition + 1, high, comparison);
+        }
+    }
+
+    private int Partition(T[] items, int low, int high, Comparison<T> comparison)
+    {
+        T pivot = items[high];
+        int i = low - 1;
+        for (int j = low; j <= high - 1; j++)
+            if (comparison(items[j], pivot) < 0)
+            {
+                i++;
+                (items[i], items[j]) = (items[j], items[i]);
+            }
+
+        (items[i + 1], items[high]) = (items[high], items[i + 1]);
+        return i + 1;
     }
 
     #endregion
@@ -197,7 +249,7 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             if (_current?.Next != null)
                 return true;
             
-            int savedIndex = _bucketIndex + 1;
+            int savedIndex = _bucketIndex;
             int temp = savedIndex;
             while (temp < _collection._buckets.Length)
             {

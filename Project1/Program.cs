@@ -41,7 +41,7 @@ class Program
         IMyCollection<TaskItem> taskCollection = collectionFactory.Create(tasksIterator);
         
         ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory, userService);
-
+        
         // Run the view
         AppController controller = new AppController(session, userService, taskService);
         controller.Run();
