@@ -140,12 +140,36 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
         public R Reduce<R>(Func<R, T, R> accumulator)
         {
-            throw new NotImplementedException();
+            R acc = default!;
+
+            for (int i = 0; i < _buckets.Length; i++)
+            {
+                Node? current = _buckets[i];
+                while (current != null)
+                {
+                    acc = accumulator(acc, current.Data);
+                    current = current.Next;
+                }
+            }
+
+            return acc;
         }
 
         public R Reduce<R>(R initial, Func<R, T, R> accumulator)
         {
-            throw new NotImplementedException();
+            R acc = initial;
+
+            for (int i = 0; i < _buckets.Length; i++)
+            {
+                Node? current = _buckets[i];
+                while (current != null)
+                {
+                    acc = accumulator(acc, current.Data);
+                    current = current.Next;
+                }
+            }
+
+            return acc;
         }
 
         public IMyIterator<T> GetIterator()
