@@ -279,11 +279,11 @@ class TaskService : ITaskService
         return predicate;
      }
 
-     private Comparison<TaskItem> BuildComparison(TaskFilter? filter)
+     private Comparison<TaskItem>? BuildComparison(TaskFilter? filter)
      {
 
          if (filter is null || !filter.ApplySort)
-             return (t1, t2) => t1.Id.CompareTo(t2.Id);
+             return null;
          
          int order = filter.SortOrder == SortOrder.Ascending ? 1 : -1;
 

@@ -77,12 +77,15 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
         return filteredCollection;
     }
 
-    public void Sort(Comparison<T> comparison)
+    public void Sort(Comparison<T>? comparison)
     {
-        if (_count > 1)
-            _head = MergeSort(_head, comparison);
-        
-        RepairPrevOrder();
+        if (comparison is not null)
+        {
+            if (_count > 1)
+                _head = MergeSort(_head, comparison);
+
+            RepairPrevOrder();
+        }
     }
 
     public int Count => _count;

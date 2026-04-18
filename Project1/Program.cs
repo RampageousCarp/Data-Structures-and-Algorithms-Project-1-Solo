@@ -3,7 +3,6 @@ using Project1.Models;
 using Project1.Repositories;
 using Project1.Repositories.Interfaces;
 using Project1.Services;
-using Project1.Services.Collections;
 using Project1.Services.Factories;
 using Project1.Services.Interfaces;
 using Project1.Views;
@@ -14,14 +13,14 @@ class Program
     {
         // Dependency injection: wiring up our components
         Session session = new Session();
-        string[] collectionTypes = ["Array", "Linked List", "Hash Table", "Binary Tree"];
+        string[] collectionTypes = ["Array", "Linked List", "Hash Map", "Binary Tree"];
         int collectionChoice = new ChoiceMenu().GetChoice(collectionTypes, true, $"=== Choose Collection Type ===\n\n");
         
         IMyCollectionFactory collectionFactory = collectionChoice switch
         {
             0 => new MyArrayCollectionFactory(),
             1 => new MyLinkedListCollectionFactory(),
-            // 2 => new MyHashTableCollectionFactory(),
+            2 => new MyHashMapCollectionFactory(),
             // 3 => new MyBinaryTreeCollectionFactory(),
         };
         
@@ -42,7 +41,7 @@ class Program
         IMyCollection<TaskItem> taskCollection = collectionFactory.Create(tasksIterator);
         
         ITaskService taskService = new TaskService(tasksRepository, taskCollection, collectionFactory, userService);
-
+        
         // Run the view
         AppController controller = new AppController(session, userService, taskService);
         controller.Run();

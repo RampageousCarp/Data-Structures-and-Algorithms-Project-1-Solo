@@ -90,9 +90,9 @@ public class MyArrayCollection<T> : IMyCollection<T>
         return result;
     }
 
-    public void Sort(Comparison<T> comparison)
+    public void Sort(Comparison<T>? comparison)
     {
-        if(_count > 1)
+        if(comparison is not null && _count > 1)
             QuickSort(0, _count -1, comparison);
     }
     
