@@ -88,7 +88,21 @@ public class MyHashMapCollection<T> : IMyCollection<T>
 
         public IMyCollection<T> Filter(Func<T, bool> predicate)
         {
-            throw new NotImplementedException();
+            IMyCollection<T> filtered = new MyHashMapCollection<T>();
+
+            for (int i = 0; i < _buckets.Length; i++)
+            {
+                Node? current = _buckets[i];
+                while (current != null)
+                {
+                    if(predicate(current.Data))
+                        filtered.Add(current.Data);
+
+                    current = current.Next;
+                }
+            }
+
+            return filtered;
         }
 
         public void Sort(Comparison<T>? comparison)
