@@ -11,4 +11,6 @@ public class User
     {
         return Username + "\n";
     }
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

@@ -40,4 +40,7 @@ public class TaskItem
     public int? AssignedTo { get; set; }
     
     public T ConvertTo<T>() where T : IFromTaskItem<T> => T.FromTask(this);
+    
+    public override int GetHashCode() => Id.GetHashCode();
+
 }
