@@ -55,22 +55,21 @@ public class MyBSTCollection<T>: IMyCollection<T>
         throw new NotImplementedException();
     }
 
-    public int Count { get; }
-    public bool Dirty { get; }
+    public int Count => _count;
+    public bool Dirty => _dirty;
     public void IncreaseDirty()
     {
-        throw new NotImplementedException();
+        _dirty = true;
+        _dirtyCount++;
     }
 
     public void ResetDirty()
     {
-        throw new NotImplementedException();
+        _dirty = false;
+        _dirtyCount = 0;
     }
 
-    public int GetDirtyCount()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetDirtyCount() => _dirtyCount;
 
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
