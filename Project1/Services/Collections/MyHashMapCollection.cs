@@ -117,7 +117,7 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             T[] items = ToArray();
             QuickSort(items, 0, _count - 1, comparison);
 
-            _sortedSnapshot = items;        // snapshot stored
+            _sortedSnapshot = items;
             _sortComparison = comparison;
             _isSorted = true;
         }
