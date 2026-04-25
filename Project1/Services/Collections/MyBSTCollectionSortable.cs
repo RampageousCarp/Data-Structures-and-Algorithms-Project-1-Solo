@@ -4,7 +4,7 @@ namespace Project1.Services.Collections;
 
 public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
 {
-    private T[] _sortedSnapshot;
+    private T[]? _sortedSnapshot;
     private bool _isSorted;
     private Comparison<T>? _sortComparison;
     
@@ -16,12 +16,45 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
 
     #region Overrides
 
-    
+    public override void Add(T item)
+    {
+        base.Add(item);
+        InvalidateSnapshot();
+    }
+
+    public override void Remove(T item)
+    {
+        base.Remove(item);
+        InvalidateSnapshot();
+    }
 
     #endregion
 
     #region Helpers
 
+    private void InvalidateSnapshot()
+    {
+        _sortedSnapshot = null;
+        _isSorted = false;
+    }
+
+    private T[] ToArray()
+    {
+        T[] arr = new T[_count];
+        FillInOrder(_root, arr, 0);
+        
+        return arr;
+    }
+
+    private int FillInOrder(Node? node, T[] arr, int index)
+    {
+        if (node == null)
+            return index;
+        
+        index = FillInOrder(node.Left, arr, index);
+        arr[index++] = node.Data;
+        return FillInOrder(node.Right, arr, index);
+    }
     
 
     #endregion

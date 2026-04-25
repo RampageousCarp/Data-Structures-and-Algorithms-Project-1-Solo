@@ -28,13 +28,13 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     
     #region Methodes
-    public void Add(T item)
+    public virtual void Add(T item)
     {
         _root = InsertNode(_root, item);
         IncreaseDirty();
     }
 
-    public void Remove(T item)
+    public virtual void Remove(T item)
     {
         (_root, bool removed) = RemoveNode(_root, item);
         if (removed)
@@ -49,7 +49,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return FindInOrder(_root, key, comparer);
     }
 
-    public IMyCollection<T> Filter(Func<T, bool> predicate)
+    public virtual IMyCollection<T> Filter(Func<T, bool> predicate)
     {
         MyBSTCollection<T> filtered = new MyBSTCollection<T>(_defaultComparison);
         FilterInOrder(_root, predicate, filtered);
@@ -57,7 +57,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return filtered;
     }
 
-    public void Sort(Comparison<T>? comparison)
+    public virtual void Sort(Comparison<T>? comparison)
     {
         return ;
     }
@@ -91,7 +91,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return ReduceInOrder(_root, initial, accumulator);
     }
 
-    public IMyIterator<T> GetIterator()
+    public virtual IMyIterator<T> GetIterator()
     {
         return new BSTIterator(this);
     }
@@ -180,7 +180,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return FindInOrder(node.Right, key, comparer);
     }
 
-    private void FilterInOrder(Node? node, Func<T, bool> predicate, MyBSTCollection<T> filtered)
+    protected virtual void FilterInOrder(Node? node, Func<T, bool> predicate, MyBSTCollection<T> filtered)
     {
         if (node == null)
             return;
