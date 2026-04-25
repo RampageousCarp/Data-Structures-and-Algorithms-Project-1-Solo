@@ -20,9 +20,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
     {
         _defaultComparison = defaultComparison;
         while (iterator.HasNext())
-        {
             Add(iterator.Next());
-        }
         
         _dirty = false;
     }
@@ -47,7 +45,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     public T? FindBy<K>(K key, Func<T, K, int> comparer)
     {
-        throw new NotImplementedException();
+        return FindInOrder(_root, key, comparer);
     }
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
@@ -160,6 +158,21 @@ public class MyBSTCollection<T>: IMyCollection<T>
             curr = curr.Left;
 
         return curr;
+    }
+
+    private T? FindInOrder<K>(Node? node, K key, Func<T, K, int> comparer)
+    {
+        if (node == null)
+            return default!;
+
+        T? left = FindInOrder(node.Left, key, comparer);
+        if (left is not null)
+            return left;
+
+        if (comparer(node.Data, key) == 0)
+            return node.Data;
+        
+        return FindInOrder(node.Right, key, comparer);
     }
 
     #endregion
