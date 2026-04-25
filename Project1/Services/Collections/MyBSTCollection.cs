@@ -6,11 +6,11 @@ namespace Project1.Services.Collections;
 public class MyBSTCollection<T>: IMyCollection<T>
 {
     
-    private Node? _root;
-    private int _count;
-    private bool _dirty;
-    private int _dirtyCount;
-    private readonly Comparison<T> _defaultComparison;
+    protected Node? _root;
+    protected int _count;
+    protected bool _dirty;
+    protected int _dirtyCount;
+    protected readonly Comparison<T> _defaultComparison;
     
     public MyBSTCollection(Comparison<T> defaultComparison)
     {
@@ -207,7 +207,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     #region InnerClasses
     
-    private class Node(T data)
+    protected class Node(T data)
     {
         public T Data = data;
         public Node? Left = null!;
@@ -252,36 +252,37 @@ public class MyBSTCollection<T>: IMyCollection<T>
             }
         }
         
-        private class NodeStack
+    }
+    
+    protected class NodeStack
+    {
+        private Node?[] _items = new Node[16];
+        private int _top = -1;
+ 
+        public bool IsEmpty => _top < 0;
+ 
+        public void Push(Node node)
         {
-            private Node?[] _items = new Node[16];
-            private int _top = -1;
- 
-            public bool IsEmpty => _top < 0;
- 
-            public void Push(Node node)
-            {
-                if (_top + 1 == _items.Length)
-                    Array.Resize(ref _items, _items.Length * 2);
+            if (_top + 1 == _items.Length)
+                Array.Resize(ref _items, _items.Length * 2);
                 
-                _items[++_top] = node;
-            }
+            _items[++_top] = node;
+        }
  
-            public Node Pop()
-            {
-                Node node = _items[_top]!;
-                _items[_top--] = null;
+        public Node Pop()
+        {
+            Node node = _items[_top]!;
+            _items[_top--] = null;
                 
-                return node;
-            }
+            return node;
+        }
  
-            public void Clear()
-            {
-                for (int i = 0; i <= _top; i++)
-                    _items[i] = null;
+        public void Clear()
+        {
+            for (int i = 0; i <= _top; i++)
+                _items[i] = null;
                 
-                _top = -1;
-            }
+            _top = -1;
         }
     }
 
