@@ -37,7 +37,12 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     public void Remove(T item)
     {
-        throw new NotImplementedException();
+        (_root, bool removed) = RemoveNode(_root, item);
+        if (removed)
+        {
+            _count--;
+            IncreaseDirty();
+        }
     }
 
     public T? FindBy<K>(K key, Func<T, K, int> comparer)
@@ -56,7 +61,9 @@ public class MyBSTCollection<T>: IMyCollection<T>
     }
 
     public int Count => _count;
+    
     public bool Dirty => _dirty;
+    
     public void IncreaseDirty()
     {
         _dirty = true;
@@ -106,6 +113,53 @@ public class MyBSTCollection<T>: IMyCollection<T>
             node.Right = InsertNode(node.Right, item);
 
         return node;
+    }
+
+    private (Node? node, bool removed) RemoveNode(Node? node, T item)
+    {
+        if (node == null)
+            return (null, true);
+
+        int cmp = _defaultComparison(item, node.Data);
+
+        if (cmp < 0)
+        {
+            (Node? newLeft, bool removed) = RemoveNode(node.Left, item);
+            node.Left = newLeft;
+            return (node, removed);
+        }
+        
+        else if (cmp > 0)
+        {
+            (Node? newRight, bool removed) = RemoveNode(node.Right, item);
+            node.Right = newRight;
+            return (node, removed);
+        }
+
+        else
+        {
+            if (node.Left == null)
+                return (node.Right, true);
+            if (node.Right == null)
+                return (node.Left, true);
+
+            Node successor = GetSuccessor(node.Right);
+            node.Data = successor.Data;
+
+            (Node? newRight, _) = RemoveNode(node.Right, successor.Data);
+            node.Right = newRight;
+
+            return (node, true);
+        }
+    }
+
+    private Node GetSuccessor(Node node)
+    {
+        Node curr = node;
+        while (curr.Left != null)
+            curr = curr.Left;
+
+        return curr;
     }
 
     #endregion
