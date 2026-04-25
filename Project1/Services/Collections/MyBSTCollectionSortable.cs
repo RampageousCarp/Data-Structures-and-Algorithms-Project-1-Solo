@@ -46,6 +46,14 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
 
     }
 
+    public override IMyCollection<T> Filter(Func<T, bool> predicate)
+    {
+        MyBSTCollectionSortable<T> filtered = new MyBSTCollectionSortable<T>(_defaultComparison);
+        
+        FilterInOrder(_root, predicate, filtered);
+        return filtered;
+    }
+
     #endregion
 
     #region Helpers
