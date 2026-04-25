@@ -21,7 +21,9 @@ class Program
             0 => new MyArrayCollectionFactory(),
             1 => new MyLinkedListCollectionFactory(),
             2 => new MyHashMapCollectionFactory(),
-            // 3 => new MyBinaryTreeCollectionFactory(),
+            3 => new MyBSTCollectionFactory()
+                .RegisterComparison<User>((a, b) => a.Id.CompareTo(b.Id))
+                .RegisterComparison<TaskItem>((a, b) => a.Id.CompareTo(b.Id))
         };
         
         string usersFilePath = "Repositories/JSON/users.json";
