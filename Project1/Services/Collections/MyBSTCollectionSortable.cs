@@ -54,6 +54,13 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
         return filtered;
     }
 
+    public override IMyIterator<T> GetIterator()
+    {
+        return _isSorted && _sortedSnapshot != null
+            ? new SortedSnapshotIterator(_sortedSnapshot)
+            : base.GetIterator();
+    }
+
     #endregion
 
     #region Helpers
