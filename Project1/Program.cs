@@ -13,7 +13,7 @@ class Program
     {
         // Dependency injection: wiring up our components
         Session session = new Session();
-        string[] collectionTypes = ["Array", "Linked List", "Hash Map", "Binary Tree", "Binary Tree (With Snapshot Sort)"];
+        string[] collectionTypes = ["Array", "Linked List", "Hash Map (Non-Sortable)", "Hash Map (With Snapshot Sort)", "Binary Tree (Non-Sortable)", "Binary Tree (With Snapshot Sort)"];
         int collectionChoice = new ChoiceMenu().GetChoice(collectionTypes, true, $"=== Choose Collection Type ===\n\n");
         
         IMyCollectionFactory collectionFactory = collectionChoice switch
@@ -21,10 +21,11 @@ class Program
             0 => new MyArrayCollectionFactory(),
             1 => new MyLinkedListCollectionFactory(),
             2 => new MyHashMapCollectionFactory(),
-            3 => new MyBSTCollectionFactory()
+            3 => new MyHashMapCollectionSortableFactory(),
+            4 => new MyBSTCollectionFactory()
                 .RegisterComparison<User>((a, b) => a.Id.CompareTo(b.Id))
                 .RegisterComparison<TaskItem>((a, b) => a.Id.CompareTo(b.Id)),
-            4 => new MyBSTCollectionSortableFactory()
+            5 => new MyBSTCollectionSortableFactory()
                 .RegisterComparison<User>((a, b) => a.Id.CompareTo(b.Id))
                 .RegisterComparison<TaskItem>((a, b) => a.Id.CompareTo(b.Id))
         };

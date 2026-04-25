@@ -8,8 +8,8 @@ public class MyBSTCollection<T>: IMyCollection<T>
     
     protected Node? _root;
     protected int _count;
-    protected bool _dirty;
-    protected int _dirtyCount;
+    private bool _dirty;
+    private int _dirtyCount;
     protected readonly Comparison<T> _defaultComparison;
     
     public MyBSTCollection(Comparison<T> defaultComparison)
@@ -180,7 +180,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return FindInOrder(node.Right, key, comparer);
     }
 
-    protected virtual void FilterInOrder(Node? node, Func<T, bool> predicate, MyBSTCollection<T> filtered)
+    protected void FilterInOrder(Node? node, Func<T, bool> predicate, MyBSTCollection<T> filtered)
     {
         if (node == null)
             return;
@@ -254,7 +254,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         
     }
     
-    protected class NodeStack
+    private class NodeStack
     {
         private Node?[] _items = new Node[16];
         private int _top = -1;

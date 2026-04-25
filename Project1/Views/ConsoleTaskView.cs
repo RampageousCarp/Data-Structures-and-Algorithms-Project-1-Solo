@@ -119,7 +119,7 @@ public class ConsoleTaskView : ITaskView
 
     private void DisplayActiveFilters()
     {
-        if (_filters.IsEmpty)
+        if (_filters.IsEmpty && !_filters.ApplySort)
             return;
         
         Console.WriteLine("\n=== Active filters ===");
