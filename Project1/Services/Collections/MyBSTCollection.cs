@@ -82,12 +82,13 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     public R Reduce<R>(Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        R acc = default!;
+        return ReduceInOrder(_root, acc, accumulator);
     }
 
     public R Reduce<R>(R initial, Func<R, T, R> accumulator)
     {
-        throw new NotImplementedException();
+        return ReduceInOrder(_root, initial, accumulator);
     }
 
     public IMyIterator<T> GetIterator()
@@ -188,6 +189,18 @@ public class MyBSTCollection<T>: IMyCollection<T>
         if (predicate(node.Data))
             filtered.Add(node.Data);
         FilterInOrder(node.Right, predicate, filtered);
+    }
+
+    private R ReduceInOrder<R>(Node? node, R acc, Func<R, T, R> accumulator)
+    {
+        if (node == null)
+            return acc;
+
+        acc = ReduceInOrder(node.Left, acc, accumulator);
+        acc = accumulator(acc, node.Data);
+        acc = ReduceInOrder(node.Right, acc, accumulator);
+
+        return acc;
     }
 
     #endregion
