@@ -19,6 +19,11 @@ public class MyBSTCollection<T>: IMyCollection<T>
     public MyBSTCollection(IMyIterator<T> iterator, Comparison<T> defaultComparison)
     {
         _defaultComparison = defaultComparison;
+        while (iterator.HasNext())
+        {
+            Add(iterator.Next());
+        }
+        
         _dirty = false;
     }
 
@@ -26,7 +31,8 @@ public class MyBSTCollection<T>: IMyCollection<T>
     #region Methodes
     public void Add(T item)
     {
-        throw new NotImplementedException();
+        _root = InsertNode(_root, item);
+        IncreaseDirty();
     }
 
     public void Remove(T item)
@@ -85,7 +91,23 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     #region Helpers
 
-    
+    private Node InsertNode(Node? node, T item)
+    {
+        if (node == null)
+        {
+            _count++;
+            return new Node(item);
+        }
+
+        int cmp = _defaultComparison(item, node.Data);
+
+        if (cmp < 0)
+            node.Left = InsertNode(node.Left, item);
+        else if (cmp > 0)
+            node.Right = InsertNode(node.Right, item);
+
+        return node;
+    }
 
     #endregion
 
