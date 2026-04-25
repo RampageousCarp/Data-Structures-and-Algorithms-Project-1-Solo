@@ -1,3 +1,4 @@
+using Project1.Services.Factories;
 using Project1.Services.Interfaces;
 
 namespace Project1.Services.Collections;
@@ -50,12 +51,15 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     public IMyCollection<T> Filter(Func<T, bool> predicate)
     {
-        throw new NotImplementedException();
+        MyBSTCollection<T> filtered = new MyBSTCollection<T>(_defaultComparison);
+        FilterInOrder(_root, predicate, filtered);
+        
+        return filtered;
     }
 
     public void Sort(Comparison<T>? comparison)
     {
-        throw new NotImplementedException();
+        return ;
     }
 
     public int Count => _count;
@@ -173,6 +177,17 @@ public class MyBSTCollection<T>: IMyCollection<T>
             return node.Data;
         
         return FindInOrder(node.Right, key, comparer);
+    }
+
+    private void FilterInOrder(Node? node, Func<T, bool> predicate, MyBSTCollection<T> filtered)
+    {
+        if (node == null)
+            return;
+        
+        FilterInOrder(node.Left, predicate, filtered);
+        if (predicate(node.Data))
+            filtered.Add(node.Data);
+        FilterInOrder(node.Right, predicate, filtered);
     }
 
     #endregion
