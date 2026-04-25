@@ -6,7 +6,6 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
 {
     private T[]? _sortedSnapshot;
     private bool _isSorted;
-    private Comparison<T>? _sortComparison;
     
     public MyBSTCollectionSortable(Comparison<T> defaultComparison)
         : base(defaultComparison) { }
@@ -26,6 +25,25 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
     {
         base.Remove(item);
         InvalidateSnapshot();
+    }
+
+    public override void Sort(Comparison<T>? comparison)
+    {
+        if (comparison is null)
+        {
+            InvalidateSnapshot();
+            return;
+        }
+        
+        if (_isSorted)
+            return;
+
+        T[] items = ToArray();
+        QuickSort(items, 0, _count - 1, comparison);
+        
+        _isSorted = true;
+        _sortedSnapshot = items;
+
     }
 
     #endregion
@@ -56,6 +74,30 @@ public class MyBSTCollectionSortable<T> : MyBSTCollection<T>
         return FillInOrder(node.Right, arr, index);
     }
     
+    private void QuickSort(T[] items, int low, int high, Comparison<T> comparison)
+    {
+        if (low < high)
+        {
+            int pivotPosition = Partition(items, low, high, comparison);
+            QuickSort(items, low, pivotPosition - 1, comparison);
+            QuickSort(items,pivotPosition + 1, high, comparison);
+        }
+    }
+
+    private int Partition(T[] items, int low, int high, Comparison<T> comparison)
+    {
+        T pivot = items[high];
+        int i = low - 1;
+        for (int j = low; j <= high - 1; j++)
+            if (comparison(items[j], pivot) < 0)
+            {
+                i++;
+                (items[i], items[j]) = (items[j], items[i]);
+            }
+
+        (items[i + 1], items[high]) = (items[high], items[i + 1]);
+        return i + 1;
+    }
 
     #endregion
 
