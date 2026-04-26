@@ -38,6 +38,8 @@ public class TaskItem
     public DateOnly DueTo { get; set; }
     
     public int? AssignedTo { get; set; }
+
+    public int[] DependsOn { get; set; } = Array.Empty<int>();
     
     public T ConvertTo<T>() where T : IFromTaskItem<T> => T.FromTask(this);
     
