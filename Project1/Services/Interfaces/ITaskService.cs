@@ -16,4 +16,5 @@ public interface ITaskService
     void UnassignUser(int userId);
     bool CanUserEdit(int taskId, int currentUserId);
     void SaveTasks();
+    bool IsBlocked(int taskId);
 }

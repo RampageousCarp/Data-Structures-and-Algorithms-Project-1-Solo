@@ -40,7 +40,7 @@ public class ConsoleTaskView : ITaskView
         _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
         _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
-        _boardDisplay = new KanbanBoardDisplay(userService);
+        _boardDisplay = new KanbanBoardDisplay(userService, taskService);
         _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
     }
 

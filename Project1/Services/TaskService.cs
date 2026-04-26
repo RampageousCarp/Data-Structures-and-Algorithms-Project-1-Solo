@@ -196,6 +196,22 @@ class TaskService : ITaskService
         _tasks.ResetDirty();
     }
 
+    public bool IsBlocked(int taskId)
+    {
+        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+        if (task is null)
+            return false;
+
+        for (int i = 0; i < task.DependsOn.Length; i++)
+        {
+            TaskItem? taskDependency = _tasks.FindBy(task.DependsOn[i], (t, key) => t.Id.CompareTo(key));
+            if (taskDependency != null && !taskDependency.Completed)
+                return true;
+        }
+
+        return false;
+    }
+
     private void AutoSave()
     {
         if (_tasks.GetDirtyCount() >= DIRTY_LIMIT)
