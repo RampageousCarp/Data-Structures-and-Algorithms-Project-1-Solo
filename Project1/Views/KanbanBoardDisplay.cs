@@ -26,7 +26,12 @@ public class KanbanBoardDisplay
             t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
             t => t.ConvertTo<TaskTableView>().ToTableCreated(),
             t => GetAssigneeString(_userService.GetUserById(t.AssignedTo.GetValueOrDefault())),
-            t => t.ConvertTo<TaskTableView>().ToTableDependsOn()
+            t => t.ConvertTo<TaskTableView>().ToTableDependsOn(),
+            t =>
+            {
+                int[] blocking = _taskService.GetBlockingTasksIds(t.Id);
+                return $"Blocked By: {(blocking.Length > 0 ? string.Join(", ", blocking) : "None")}";
+            }
         };
     }
     

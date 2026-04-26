@@ -212,6 +212,29 @@ class TaskService : ITaskService
         return false;
     }
 
+    public int[] GetBlockingTasksIds(int taskId)
+    {
+        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+        if (task is null || task.DependsOn == null || task.DependsOn.Length == 0)
+            return Array.Empty<int>();
+
+        int[] blockingTasks = new int[task.DependsOn.Length];
+
+        int pos = 0;
+        for (int i = 0; i < task.DependsOn.Length; i++)
+        {
+            TaskItem? taskDependency = _tasks.FindBy(task.DependsOn[i], (t, key) => t.Id.CompareTo(key));
+            if (taskDependency != null && !taskDependency.Completed)
+                blockingTasks[pos++] = taskDependency.Id;
+        }
+
+        if (pos == 0)
+            return Array.Empty<int>();
+        
+        Array.Resize(ref blockingTasks, pos);
+        return blockingTasks;
+    }
+
     private void AutoSave()
     {
         if (_tasks.GetDirtyCount() >= DIRTY_LIMIT)
