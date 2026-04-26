@@ -110,6 +110,7 @@ class TaskService : ITaskService
             return false;
         
         _tasks.Remove(task);
+        ClearDependencyReferences(id);
         
         _tasks.IncreaseDirty();
         AutoSave();
@@ -355,5 +356,35 @@ class TaskService : ITaskService
 
          return (t1, t2) => t1.Id.CompareTo(t2.Id);
      }
-    
+
+     private void ClearDependencyReferences(int taskId)
+     {
+         IMyIterator<TaskItem> iterator = _tasks.GetIterator();
+         iterator.Reset();
+         while (iterator.HasNext())
+         {
+             TaskItem task = iterator.Next();
+             task.DependsOn = ArrayRemove(task.DependsOn, taskId);
+         }
+     }
+
+     private int[] ArrayRemove(int[] arr, int value)
+     {
+         int count = 0;
+         for (int i = 0; i < arr.Length; i ++)
+             if (arr[i] == value)
+                 count++;
+
+         if (count == 0)
+             return arr;
+
+         int[] result = new int[arr.Length - count];
+         int pos = 0;
+         for(int i = 0; i < arr.Length; i ++)
+             if (arr[i] != value)
+                 result[pos++] = arr[i];
+
+         return result;
+     }
+
 }
