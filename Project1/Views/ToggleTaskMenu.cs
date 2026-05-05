@@ -19,18 +19,16 @@ public class ToggleTaskMenu
         _taskService = taskService;
     }
 
-    public (int id, TaskStatus status)? ToggleTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public void ToggleTask(Func<IMyCollection<TaskItem>> getTasksWithFilter, int currentUserId, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
-        
         while (true)
         {
-            (int id, TaskStatus status)? result = null;
-            TaskStatus? newStatus = null;
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+            TaskStatus? newStatus = null;
             
             if (menuItems[selectedIndex].IsAction)
-                return null;
+                return ;
 
             TaskItem selectedTask = menuItems[selectedIndex].Value!;
             
@@ -39,19 +37,22 @@ public class ToggleTaskMenu
             else
                 newStatus = HandleTaskToggle();
 
-            if (selectedTask.Status < newStatus)
+            if (_taskService.IsBlocked(selectedTask.Id))
             {
-                ToggleBlockedByDependency(selectedTask);
-                continue;
+                if (selectedTask.Status < newStatus)
+                {
+                    ToggleBlockedByDependency(selectedTask);
+                    continue;
+                }
+
+                if (selectedTask.Status == TaskStatus.Done && newStatus != TaskStatus.NotStarted)
+                {
+                    ToggleBlockedCanOnlyBeNotStarted(selectedTask);
+                }
             }
 
-            if (selectedTask.Status == TaskStatus.Done && newStatus != TaskStatus.NotStarted)
-            {
-                ToggleBlockedCanOnlyBeNotStarted(selectedTask);
-            }
-            
-            if (newStatus is not null)
-                return ((int id, TaskStatus status)?)(menuItems[selectedIndex].Value!.Id, newStatus);
+            if (newStatus != null)
+                _taskService.ToggleTask(selectedTask.Id, currentUserId, newStatus.GetValueOrDefault());
         }
     }
     

@@ -73,11 +73,7 @@ public class ConsoleTaskView : ITaskView
                             taskToUpdate.Value.updatedTask);
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle =
-                        _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                        _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id,
-                            taskToToggle.Value.status);
+                    _toggleTaskMenu.ToggleTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     
                     break;
                 case 4:

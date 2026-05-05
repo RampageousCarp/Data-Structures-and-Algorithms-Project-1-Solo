@@ -115,8 +115,6 @@ public class TaskDependencyManagementMenu
 
     private void AddDependency(TaskItem task)
     {
-        // MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
-
         while (true)
         {
             MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
