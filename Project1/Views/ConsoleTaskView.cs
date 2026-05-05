@@ -34,7 +34,7 @@ public class ConsoleTaskView : ITaskView
         
         _addTaskMenu = new AddTaskMenu(session, taskService, userSelectionView);
         _removeTaskMenu = new RemoveTaskMenu(displayMapper, taskService);
-        _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
+        _updateTaskMenu = new UpdateTaskMenu(displayMapper, taskService, userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
         _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
         _assignTaskMenu = new AssignTaskMenu(displayMapper, taskService, userSelectionView, userService.GetUserById);
@@ -56,19 +56,17 @@ public class ConsoleTaskView : ITaskView
             {
                 case 0:
                     _addTaskMenu.AddTask();
-                    // CreateTaskModel? newTask = _addTaskMenu.AddTask();
-                    // if (newTask is not null)
-                    //     _taskService.AddTask(newTask);
                     break;
                 case 1:
                     _removeTaskMenu.RemoveTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate =
-                        _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                        _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id,
-                            taskToUpdate.Value.updatedTask);
+                    _updateTaskMenu.UpdateTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
+                    // (int id, UpdateTaskModel updatedTask)? taskToUpdate =
+                    //     _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
+                    // if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
+                    //     _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id,
+                    //         taskToUpdate.Value.updatedTask);
                     break;
                 case 3:
                     _toggleTaskMenu.ToggleTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
