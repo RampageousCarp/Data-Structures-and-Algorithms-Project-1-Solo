@@ -58,10 +58,25 @@ public abstract class MyCollectionTests<T>
     [Fact]
     public void Remove_OnlyItem_CountIsZero()
     {
-        var col = CreateEmpty();
+        IMyCollection<T> col = CreateEmpty();
         col.Add(Item1);
         col.Remove(Item1);
         Assert.Equal(0, col.Count);
+    }
+
+    #endregion
+
+    #region FindBy
+
+    [Fact]
+    public void FindBy_ExistingItem_ReturnsItem()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+ 
+        T? result = col.FindBy(Item1, (item, key) => item!.Equals(key) ? 0 : 1);
+        Assert.Equal(Item1, result);
     }
 
     #endregion
