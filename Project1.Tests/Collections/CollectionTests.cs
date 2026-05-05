@@ -129,6 +129,42 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Reduce
+
+    [Fact]
+    public void Reduce_WithInitial_AggregatesCorrectly()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+ 
+        int count = col.Reduce(0, (acc, _) => acc + 1);
+        Assert.Equal(3, count);
+    }
+ 
+    [Fact]
+    public void Reduce_NoInitial_AggregatesCorrectly()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+ 
+        int count = col.Reduce<int>((acc, _) => acc + 1);
+        Assert.Equal(3, count);
+    }
+ 
+    [Fact]
+    public void Reduce_EmptyCollection_ReturnsInitial()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        int result = col.Reduce(42, (acc, _) => acc + 1);
+        Assert.Equal(42, result);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
