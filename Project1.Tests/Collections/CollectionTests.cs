@@ -282,14 +282,14 @@ public class MyArrayCollectionTests : MyCollectionTests<int>
     protected override int Item1 => 10;
     protected override int Item2 => 20;
     protected override int Item3 => 30;
-
-    #region Sort
-
+    
     [Fact]
     public void Sort_Ascending_ItemsInOrder()
     {
         MyArrayCollection<int> col = new MyArrayCollection<int>();
-        col.Add(30); col.Add(10); col.Add(20);
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
         col.Sort((a, b) => a.CompareTo(b));
  
         IMyIterator<int> it = col.GetIterator();
@@ -304,25 +304,24 @@ public class MyArrayCollectionTests : MyCollectionTests<int>
     public void Sort_NullComparison_DoesNotThrow()
     {
         MyArrayCollection<int> col = new MyArrayCollection<int>();
-        col.Add(1); col.Add(2);
+        col.Add(1);
+        col.Add(2);
+        
         var ex = Record.Exception(() => col.Sort(null));
+        
         Assert.Null(ex);
     }
-
-    #endregion
-
-    #region Array resize
-
+    
     [Fact]
     public void Add_BeyondDefaultCapacity_ExpandsCorrectly()
     {
         MyArrayCollection<int> col = new MyArrayCollection<int>();
         for (int i = 0; i < 70; i++)
             col.Add(i);
+        
         Assert.Equal(70, col.Count);
     }
 
-    #endregion
 }
 
 public class MyLinkedListCollectionTests : MyCollectionTests<int>
@@ -332,6 +331,55 @@ public class MyLinkedListCollectionTests : MyCollectionTests<int>
     protected override int Item1 => 10;
     protected override int Item2 => 20;
     protected override int Item3 => 30;
+    
+    [Fact]
+    public void Sort_Ascending_ItemsInOrder()
+    {
+        MyLinkedListCollection<int> col = new MyLinkedListCollection<int>();
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 10, 20, 30 }, items);
+    }
+ 
+    [Fact]
+    public void Sort_Descending_ItemsInOrder()
+    {
+        MyLinkedListCollection<int> col = new MyLinkedListCollection<int>();
+        col.Add(10);
+        col.Add(30);
+        col.Add(20);
+        col.Sort((a, b) => b.CompareTo(a));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 30, 20, 10 }, items);
+    }
+ 
+    [Fact]
+    public void Remove_LastItem_TailIsUpdated()
+    {
+        MyLinkedListCollection<int> col = new MyLinkedListCollection<int>();
+        col.Add(10);
+        col.Add(20);
+        col.Remove(20);
+        Assert.Equal(1, col.Count);
+ 
+        IMyIterator<int> it = col.GetIterator();
+        
+        Assert.True(it.HasNext());
+        Assert.Equal(10, it.Next());
+    }
     
 }
 
