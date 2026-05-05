@@ -33,6 +33,29 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Remove
+
+    [Fact]
+    public void Remove_ExistingItem_CountDecreases()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Remove(Item1);
+        Assert.Equal(1, col.Count);
+    }
+    
+    [Fact]
+    public void Remove_NonExistingItem_CountUnchanged()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Remove(Item2);
+        Assert.Equal(1, col.Count);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
