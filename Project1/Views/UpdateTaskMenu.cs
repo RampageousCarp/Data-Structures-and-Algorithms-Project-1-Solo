@@ -102,7 +102,7 @@ public class UpdateTaskMenu
                     break;
                 
                 case 2:
-                    updatedTask.Status = EnterStatus();
+                    updatedTask.Status = EnterStatus(taskToUpdate);
                     break;
                 
                 case 3:
@@ -200,12 +200,22 @@ public class UpdateTaskMenu
         return (TaskPriority)selectedIndex;
     }
     
-    private TaskStatus EnterStatus()
+    private TaskStatus EnterStatus(TaskItem originalTask)
     {
         Console.Clear();
         Console.WriteLine("=== Enter Status ===\n");
 
-        string[] statuses = Enum.GetNames(typeof(TaskStatus));
+        string[] statuses;
+        if (!_taskService.IsBlocked(originalTask.Id))
+            statuses = Enum.GetNames(typeof(TaskStatus));
+        else
+        {
+            if (originalTask.Status == TaskStatus.Done)
+                statuses = [nameof(TaskStatus.NotStarted), nameof(TaskStatus.Done)];
+            else
+                statuses = [nameof(TaskStatus.NotStarted)];
+        }
+            
         int selectedIndex = _menu.GetChoice(statuses);
 
         return (TaskStatus)selectedIndex;
