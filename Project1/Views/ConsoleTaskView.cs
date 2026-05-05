@@ -17,6 +17,7 @@ public class ConsoleTaskView : ITaskView
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
     private readonly AssignTaskMenu _assignTaskMenu;
+    private readonly TaskDependencyManagementMenu _dependencyManagementMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
     private readonly FiltersMenu _filtersMenu;
     private readonly UserSelectionView _userSelectionView;
@@ -39,6 +40,7 @@ public class ConsoleTaskView : ITaskView
         _removeTaskMenu = new RemoveTaskMenu(_displayMapper);
         _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
+        _dependencyManagementMenu = new TaskDependencyManagementMenu(_displayMapper);
         _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
         _boardDisplay = new KanbanBoardDisplay(userService, taskService);
         _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
@@ -89,6 +91,9 @@ public class ConsoleTaskView : ITaskView
                             taskAssignment.Value.assigneeId);
                     break;
                 case 5:
+                    _dependencyManagementMenu.ManageDependencies(GetAllTasksFiltered(), CanUserEdit);
+                    break;
+                case 6:
                     _filtersMenu.SelectFilters();
                     break;
                 
@@ -108,6 +113,7 @@ public class ConsoleTaskView : ITaskView
             "Update Task",
             "Toggle Task Status",
             "Assign/Reassign Task",
+            "Manage Task Dependencies",
             "Apply filters",
             null,
             "Exit"
