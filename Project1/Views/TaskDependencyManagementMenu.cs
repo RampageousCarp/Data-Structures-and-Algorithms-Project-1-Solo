@@ -18,12 +18,13 @@ public class TaskDependencyManagementMenu
         _taskService = taskService;
     }
     
-    public void ManageDependencies(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public void ManageDependencies(Func<IMyCollection<TaskItem>> getTasksWithFilter, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
+        MenuOption<TaskItem>[] menuItems;
 
         while (true)
         {
+            menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
@@ -79,21 +80,34 @@ public class TaskDependencyManagementMenu
 
         string?[] menuItems = ["Add dependency", "Remove dependency", "Remove all dependencies", null, "Exit"];
 
-        int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Management Action ===\n\n");
-
-        switch (selectedIndex)
+        while (true)
         {
-            case 0:
-                break;
-            case 1:
-                break;
-            case 2:
-                _taskService.RemoveAllDependencies(task.Id);
-                break;
-            default:
-                return;
+            int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Management Action ===\n\n");
+            
+            switch (selectedIndex)
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    if (ConfirmAllDependenciesRemove(task))
+                        _taskService.RemoveAllDependencies(task.Id);
+                    continue;
+                default:
+                    return;
+            }
         }
     }
+
+    private bool ConfirmAllDependenciesRemove(TaskItem task)
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Remove All Dependencies For #{task.Id} {task.Description} ===\n");
+        
+        return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+    
     
 
 }

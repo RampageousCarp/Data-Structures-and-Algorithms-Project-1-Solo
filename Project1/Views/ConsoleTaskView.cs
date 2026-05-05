@@ -88,7 +88,7 @@ public class ConsoleTaskView : ITaskView
                             taskAssignment.Value.assigneeId);
                     break;
                 case 5:
-                    _dependencyManagementMenu.ManageDependencies(GetAllTasksFiltered(), CanUserEdit);
+                    _dependencyManagementMenu.ManageDependencies(GetAllTasksFiltered, CanUserEdit);
                     break;
                 case 6:
                     _filtersMenu.SelectFilters();
