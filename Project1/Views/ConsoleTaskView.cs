@@ -36,7 +36,7 @@ public class ConsoleTaskView : ITaskView
         _addUpdateTaskMenu = new AddTaskMenu(session, userSelectionView);
         _removeTaskMenu = new RemoveTaskMenu(displayMapper);
         _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
-        _toggleTaskMenu = new ToggleTaskMenu(displayMapper);
+        _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
         _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
         _assignTaskMenu = new AssignTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
         _boardDisplay = new KanbanBoardDisplay(userService, taskService);

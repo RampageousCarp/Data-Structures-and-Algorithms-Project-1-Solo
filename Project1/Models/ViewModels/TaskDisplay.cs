@@ -21,7 +21,7 @@ public class TaskDisplay
         display += $"Status: {Status}\n";
         display += $"Due To: {DueTo:dd-MM-yyyy}\n";
         display += $"Assigned to: {AssigneeName}\n";
-        display += $"Depends On: {string.Join(", ", DependsOn)}\n";
+        display += $"Depends On: {(DependsOn.Length > 0 ? string.Join(", ", DependsOn) : "None")}\n";
         
         return display;
     }
