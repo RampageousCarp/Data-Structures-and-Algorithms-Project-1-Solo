@@ -54,6 +54,15 @@ public abstract class MyCollectionTests<T>
         col.Remove(Item2);
         Assert.Equal(1, col.Count);
     }
+    
+    [Fact]
+    public void Remove_OnlyItem_CountIsZero()
+    {
+        var col = CreateEmpty();
+        col.Add(Item1);
+        col.Remove(Item1);
+        Assert.Equal(0, col.Count);
+    }
 
     #endregion
 }
