@@ -30,7 +30,7 @@ public class TaskDependencyManagementMenu
             if (!canEdit(menuItems[selectedIndex].Value!.Id))
                 ManagementBlocked(menuItems[selectedIndex].Value!);
             else
-                continue;
+                DisplayManagementActions(menuItems[selectedIndex].Value!);
         }
     }
     
@@ -69,5 +69,26 @@ public class TaskDependencyManagementMenu
         Console.WriteLine("Press any key to continue");
         Console.ReadKey();
         Console.CursorVisible = true;
+    }
+
+    private void DisplayManagementActions(TaskItem task)
+    {
+        Console.Clear();
+
+        string?[] menuItems = ["Add dependency", "Remove dependency", "Remove all dependencies", null, "Exit"];
+
+        int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Management Action ===\n\n");
+
+        switch (selectedIndex)
+        {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                return;
+        }
     }
 }
