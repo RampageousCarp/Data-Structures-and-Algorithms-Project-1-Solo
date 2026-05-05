@@ -393,6 +393,47 @@ public class MyBSTCollectionTests : MyCollectionTests<int>
     protected override int Item2 => 20;
     protected override int Item3 => 30;
     
+    [Fact]
+    public void Iterator_ReturnsItemsInSortedOrder()
+    {
+        MyBSTCollection<int> col = new MyBSTCollection<int>(Cmp);
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 10, 20, 30 }, items);
+    }
+ 
+    [Fact]
+    public void Add_DuplicateItem_IgnoresDuplicate()
+    {
+        MyBSTCollection<int> col = new MyBSTCollection<int>(Cmp);
+        col.Add(10);
+        col.Add(10);
+        
+        Assert.Equal(1, col.Count);
+    }
+ 
+    [Fact]
+    public void Remove_RootNode_TreeRemainsValid()
+    {
+        MyBSTCollection<int> col = new MyBSTCollection<int>(Cmp);
+        col.Add(20);
+        col.Add(10);
+        col.Add(30);
+        col.Remove(20);
+        Assert.Equal(2, col.Count);
+ 
+        int result = col.FindBy(10, (item, key) => item.CompareTo(key));
+        
+        Assert.Equal(10, result);
+    }
+    
 }
 
 public class MyBSTCollectionSortableTests : MyCollectionTests<int>
@@ -404,6 +445,55 @@ public class MyBSTCollectionSortableTests : MyCollectionTests<int>
     protected override int Item1 => 10;
     protected override int Item2 => 20;
     protected override int Item3 => 30;
+    
+    [Fact]
+    public void Sort_ThenIterator_UsesSnapshotOrder()
+    {
+        MyBSTCollectionSortable<int> col = new MyBSTCollectionSortable<int>(Cmp);
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
+        col.Sort((a, b) => b.CompareTo(a)); 
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 30, 20, 10 }, items);
+    }
+ 
+    [Fact]
+    public void Sort_AfterAdd_InvalidatesSnapshot()
+    {
+        MyBSTCollectionSortable<int> col = new MyBSTCollectionSortable<int>(Cmp);
+        col.Add(30);
+        col.Add(10);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        col.Add(20);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 10, 20, 30 }, items);
+    }
+ 
+    [Fact]
+    public void Sort_CalledTwice_NoError()
+    {
+        MyBSTCollectionSortable<int> col = new MyBSTCollectionSortable<int>(Cmp);
+        col.Add(30);
+        col.Add(10);
+        col.Sort((a, b) => a.CompareTo(b));
+        
+        var ex = Record.Exception(() => col.Sort((a, b) => a.CompareTo(b)));
+        
+        Assert.Null(ex);
+    }
     
 }
 
