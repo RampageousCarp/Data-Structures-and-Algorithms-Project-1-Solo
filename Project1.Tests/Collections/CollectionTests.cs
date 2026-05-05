@@ -78,6 +78,16 @@ public abstract class MyCollectionTests<T>
         T? result = col.FindBy(Item1, (item, key) => item!.Equals(key) ? 0 : 1);
         Assert.Equal(Item1, result);
     }
+    
+    [Fact]
+    public void FindBy_NonExistingItem_ReturnsDefault()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+ 
+        T? result = col.FindBy(Item3, (item, key) => item!.Equals(key) ? 0 : 1);
+        Assert.Equal(default, result);
+    }
 
     #endregion
 }
