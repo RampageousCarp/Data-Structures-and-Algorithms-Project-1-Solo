@@ -37,7 +37,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
             while (iterator.HasNext())
             {
                 if (_count == _items.Length)
-                    Array.Resize(ref _items,_items.Length * 2);
+                    Array.Resize(ref _items, _items.Length * 2 <= 0 ? 1 : _items.Length * 2);
 
                 _items[_count++] = iterator.Next();
             }
@@ -52,7 +52,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
     {
         SetDirty();
         if (_count + 1 >= _items.Length)
-            Array.Resize(ref _items,_items.Length * 2);
+            Array.Resize(ref _items, _items.Length * 2 <= 0 ? 1 : _items.Length * 2);
 
         _items[_count++] = item;
     }

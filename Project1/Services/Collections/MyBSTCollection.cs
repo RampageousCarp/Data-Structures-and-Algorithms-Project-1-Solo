@@ -1,4 +1,3 @@
-using Project1.Services.Factories;
 using Project1.Services.Interfaces;
 
 namespace Project1.Services.Collections;
@@ -264,7 +263,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
         public void Push(Node node)
         {
             if (_top + 1 == _items.Length)
-                Array.Resize(ref _items, _items.Length * 2);
+                Array.Resize(ref _items, _items.Length * 2 <= 0 ? 1 : _items.Length * 2);
                 
             _items[++_top] = node;
         }
