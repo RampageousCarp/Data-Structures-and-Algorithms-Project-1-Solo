@@ -33,7 +33,7 @@ class TaskService : ITaskService
 
         IMyCollection<TaskItem> filteredCollection = _tasks.Filter(predicate);
 
-        Comparison<TaskItem> comparison = BuildComparison(filter);
+        Comparison<TaskItem>? comparison = BuildComparison(filter);
         
         filteredCollection.Sort(comparison);
 
@@ -46,7 +46,7 @@ class TaskService : ITaskService
             ? _ => true
             : BuildPredicate(filter);
         
-        Comparison<TaskItem> comparison = BuildComparison(filter);
+        Comparison<TaskItem>? comparison = BuildComparison(filter);
 
         var (todo, inProgress, done) = _tasks.Reduce(
             (

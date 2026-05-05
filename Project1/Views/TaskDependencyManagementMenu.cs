@@ -20,11 +20,9 @@ public class TaskDependencyManagementMenu
     
     public void ManageDependencies(Func<IMyCollection<TaskItem>> getTasksWithFilter, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems;
-
         while (true)
         {
-            menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
@@ -37,11 +35,11 @@ public class TaskDependencyManagementMenu
         }
     }
     
-    private int DisplayTaskSelectionMenu(MenuOption<TaskItem>[] menuItems)
+    private int DisplayTaskSelectionMenu(MenuOption<TaskItem>[] menuItems, string title = "=== Choose Task To Manage Dependencies ===\n\n")
     {
         Console.Clear();
 
-        int selectedIndex = _menu.GetChoice(menuItems, true, "=== Choose Task To Manage Dependencies ===\n\n");
+        int selectedIndex = _menu.GetChoice(menuItems, true, title);
 
         return selectedIndex;
     }
@@ -89,7 +87,8 @@ public class TaskDependencyManagementMenu
                 case 0:
                     break;
                 case 1:
-                    break;
+                    RemoveDependency(task);
+                    continue;
                 case 2:
                     if (ConfirmAllDependenciesRemove(task))
                         _taskService.RemoveAllDependencies(task.Id);
@@ -100,10 +99,30 @@ public class TaskDependencyManagementMenu
         }
     }
 
+    private void RemoveDependency(TaskItem task)
+    {
+        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllDependencyTasks(task.Id));
+        int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+        
+        if (menuItems[selectedIndex].IsAction)
+            return;
+        
+        if (ConfirmDependencyRemove(task, menuItems[selectedIndex].Value!))
+            _taskService.RemoveDependency(task.Id, menuItems[selectedIndex].Value!.Id);
+    }
+
     private bool ConfirmAllDependenciesRemove(TaskItem task)
     {
         Console.Clear();
         Console.WriteLine($"=== Remove All Dependencies For #{task.Id} {task.Description} ===\n");
+        
+        return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+    
+    private bool ConfirmDependencyRemove(TaskItem task, TaskItem dependency)
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Remove #{dependency.Id} {dependency.Description} As Dependency For #{task.Id} {task.Description} ===\n");
         
         return _menu.GetChoice(["Yes", "No"]) == 0;
     }
