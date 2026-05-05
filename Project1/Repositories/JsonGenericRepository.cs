@@ -34,6 +34,14 @@ public class JsonGenericRepository<T> : IGenericRepository<T>
         {
             WriteIndented = true
         });
+        
+        string? directory = Path.GetDirectoryName(_filePath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(_filePath, json);
 
         File.WriteAllText(_filePath, json);
     }
