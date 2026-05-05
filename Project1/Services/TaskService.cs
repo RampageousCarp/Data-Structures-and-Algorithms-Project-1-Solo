@@ -260,7 +260,15 @@ class TaskService : ITaskService
 
     public void RemoveDependency(int taskId, int dependencyTaskId)
     {
-        throw new NotImplementedException();
+        TaskItem? task = GetTaskById(taskId);
+
+        if (task is null)
+            return;
+
+        task.DependsOn = ArrayRemove(task.DependsOn, dependencyTaskId);
+        
+        _tasks.IncreaseDirty();
+        AutoSave();
     }
 
     public void RemoveAllDependencies(int taskId)
@@ -271,6 +279,7 @@ class TaskService : ITaskService
             return;
 
         task.DependsOn = Array.Empty<int>();
+        
         _tasks.IncreaseDirty();
         AutoSave();
 
@@ -405,6 +414,8 @@ class TaskService : ITaskService
          {
              TaskItem task = iterator.Next();
              task.DependsOn = ArrayRemove(task.DependsOn, taskId);
+             
+             _tasks.IncreaseDirty();
          }
      }
 

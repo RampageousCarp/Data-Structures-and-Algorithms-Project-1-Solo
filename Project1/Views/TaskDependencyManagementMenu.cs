@@ -108,6 +108,4 @@ public class TaskDependencyManagementMenu
         return _menu.GetChoice(["Yes", "No"]) == 0;
     }
     
-    
-
 }
