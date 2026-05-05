@@ -283,7 +283,46 @@ public class MyArrayCollectionTests : MyCollectionTests<int>
     protected override int Item2 => 20;
     protected override int Item3 => 30;
 
-    
+    #region Sort
+
+    [Fact]
+    public void Sort_Ascending_ItemsInOrder()
+    {
+        MyArrayCollection<int> col = new MyArrayCollection<int>();
+        col.Add(30); col.Add(10); col.Add(20);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new [] { 10, 20, 30 }, items);
+    }
+ 
+    [Fact]
+    public void Sort_NullComparison_DoesNotThrow()
+    {
+        MyArrayCollection<int> col = new MyArrayCollection<int>();
+        col.Add(1); col.Add(2);
+        var ex = Record.Exception(() => col.Sort(null));
+        Assert.Null(ex);
+    }
+
+    #endregion
+
+    #region Array resize
+
+    [Fact]
+    public void Add_BeyondDefaultCapacity_ExpandsCorrectly()
+    {
+        MyArrayCollection<int> col = new MyArrayCollection<int>();
+        for (int i = 0; i < 70; i++)
+            col.Add(i);
+        Assert.Equal(70, col.Count);
+    }
+
+    #endregion
 }
 
 public class MyLinkedListCollectionTests : MyCollectionTests<int>
