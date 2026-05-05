@@ -505,6 +505,26 @@ public class MyHashMapCollectionTests : MyCollectionTests<int>
     protected override int Item2 => 20;
     protected override int Item3 => 30;
     
+    [Fact]
+    public void Add_DuplicateItem_IgnoresDuplicate()
+    {
+        MyHashMapCollection<int> col = new MyHashMapCollection<int>();
+        col.Add(10);
+        col.Add(10);
+        
+        Assert.Equal(1, col.Count);
+    }
+ 
+    [Fact]
+    public void Add_BeyondLoadFactor_ResizesCorrectly()
+    {
+        MyHashMapCollection<int> col = new MyHashMapCollection<int>();
+        for (int i = 0; i < 20; i++)
+            col.Add(i);
+        
+        Assert.Equal(20, col.Count);
+    }
+    
 }
 
 public class MyHashMapCollectionSortableTests : MyCollectionTests<int>
@@ -514,5 +534,54 @@ public class MyHashMapCollectionSortableTests : MyCollectionTests<int>
     protected override int Item1 => 10;
     protected override int Item2 => 20;
     protected override int Item3 => 30;
+    
+    [Fact]
+    public void Sort_ThenIterator_UsesSnapshotOrder()
+    {
+        MyHashMapCollectionSortable<int> col = new MyHashMapCollectionSortable<int>();
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(new[] { 10, 20, 30 }, items);
+    }
+ 
+    [Fact]
+    public void Sort_AfterRemove_InvalidatesSnapshot()
+    {
+        MyHashMapCollectionSortable<int> col = new MyHashMapCollectionSortable<int>();
+        col.Add(30);
+        col.Add(10);
+        col.Add(20);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        col.Remove(30);
+        col.Sort((a, b) => a.CompareTo(b));
+ 
+        IMyIterator<int> it = col.GetIterator();
+        List<int> items = new List<int>();
+        while (it.HasNext())
+            items.Add(it.Next());
+ 
+        Assert.Equal(2, items.Count);
+        Assert.DoesNotContain(30, items);
+    }
+ 
+    [Fact]
+    public void Sort_NullComparison_InvalidatesSnapshot()
+    {
+        MyHashMapCollectionSortable<int> col = new MyHashMapCollectionSortable<int>();
+        col.Add(10);
+        col.Add(20);
+        col.Sort(null);
+        
+        Assert.Equal(2, col.Count);
+    }
     
 }
