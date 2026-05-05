@@ -165,6 +165,59 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Iterator
+
+    [Fact]
+    public void Iterator_EmptyCollection_HasNextIsFalse()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        IMyIterator<T> it = col.GetIterator();
+        Assert.False(it.HasNext());
+    }
+ 
+    [Fact]
+    public void Iterator_ThreeItems_IteratesAllItems()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+ 
+        IMyIterator<T> it = col.GetIterator();
+        int count = 0;
+        while (it.HasNext())
+        {
+            it.Next();
+            count++;
+        }
+        Assert.Equal(3, count);
+    }
+ 
+    [Fact]
+    public void Iterator_Reset_IteratesAgainFromStart()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+ 
+        IMyIterator<T> it = col.GetIterator();
+        while (it.HasNext())
+            it.Next();
+ 
+        it.Reset();
+        Assert.True(it.HasNext());
+ 
+        int countAfterReset = 0;
+        while (it.HasNext())
+        {
+            it.Next();
+            countAfterReset++;
+        }
+        Assert.Equal(2, countAfterReset);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
