@@ -1,5 +1,4 @@
 using Project1.Models;
-using Project1.Models.Interfaces;
 using Project1.Models.ViewModels;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
@@ -18,4 +17,7 @@ public interface ITaskService
     void SaveTasks();
     bool IsBlocked(int taskId);
     int[] GetBlockingTasksIds(int taskId);
+    IMyCollection<TaskItem> GetAllDependencyTasks(int taskId);
+    void RemoveDependency(int taskId, int dependencyTaskId);
+    void RemoveAllDependencies(int taskId);
 }

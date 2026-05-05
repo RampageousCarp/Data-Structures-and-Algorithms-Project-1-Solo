@@ -7,13 +7,15 @@ namespace Project1.Views;
 
 public class TaskDependencyManagementMenu
 {
-    private ChoiceMenu _menu;
-    private TaskDisplayMapper _displayMapper;
+    private readonly ChoiceMenu _menu;
+    private readonly TaskDisplayMapper _displayMapper;
+    private readonly ITaskService _taskService;
     
-    public TaskDependencyManagementMenu(TaskDisplayMapper mapper)
+    public TaskDependencyManagementMenu(TaskDisplayMapper mapper, ITaskService taskService)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _taskService = taskService;
     }
     
     public void ManageDependencies(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
@@ -86,9 +88,12 @@ public class TaskDependencyManagementMenu
             case 1:
                 break;
             case 2:
+                _taskService.RemoveAllDependencies(task.Id);
                 break;
             default:
                 return;
         }
     }
+    
+
 }

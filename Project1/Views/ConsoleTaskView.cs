@@ -1,15 +1,15 @@
 using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
-using Project1.Views;
 using Project1.Views.Mapping;
 using Project1.Views.Users;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
+namespace Project1.Views;
+
 public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _taskService;
-    private readonly IUserService _userService;
     private readonly Session _session;
     private readonly ChoiceMenu _menu;
     private readonly AddTaskMenu _addUpdateTaskMenu;
@@ -20,30 +20,27 @@ public class ConsoleTaskView : ITaskView
     private readonly TaskDependencyManagementMenu _dependencyManagementMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
     private readonly FiltersMenu _filtersMenu;
-    private readonly UserSelectionView _userSelectionView;
-    
-    private readonly TaskDisplayMapper _displayMapper;
-    
+
     private TaskFilter _filters;
     
     public ConsoleTaskView(ITaskService taskService, IUserService userService, Session session)
     {
-        _taskService = taskService;
-        _userService = userService;
-        _session = session;
-        _filters = new TaskFilter();
+        TaskDisplayMapper displayMapper = new TaskDisplayMapper(userService);
+        UserSelectionView userSelectionView = new UserSelectionView(userService);
         
         _menu = new ChoiceMenu();
-        _displayMapper = new TaskDisplayMapper(userService);
-        _userSelectionView = new UserSelectionView(userService);
-        _addUpdateTaskMenu = new AddTaskMenu(session, _userSelectionView);
-        _removeTaskMenu = new RemoveTaskMenu(_displayMapper);
-        _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
-        _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
-        _dependencyManagementMenu = new TaskDependencyManagementMenu(_displayMapper);
-        _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
+        _session = session;
+        _filters = new TaskFilter();
+        _taskService = taskService;
+        
+        _addUpdateTaskMenu = new AddTaskMenu(session, userSelectionView);
+        _removeTaskMenu = new RemoveTaskMenu(displayMapper);
+        _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
+        _toggleTaskMenu = new ToggleTaskMenu(displayMapper);
+        _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
+        _assignTaskMenu = new AssignTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
         _boardDisplay = new KanbanBoardDisplay(userService, taskService);
-        _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
+        _filtersMenu = new FiltersMenu(_filters, userSelectionView, session);
     }
 
     public void Run()

@@ -105,7 +105,7 @@ class TaskService : ITaskService
 
     public bool RemoveTask(int id, int currentUserId)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(id);
         if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
             return false;
         
@@ -121,7 +121,7 @@ class TaskService : ITaskService
 
     public bool UpdateTask(int id, int currentUserId, UpdateTaskModel updateTaskData)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(id);
         if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
             return false;
 
@@ -139,7 +139,7 @@ class TaskService : ITaskService
 
     public bool ToggleTask(int id, int currentUserId, TaskStatus newStatus)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(id);
         if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
             return false;
         
@@ -153,7 +153,7 @@ class TaskService : ITaskService
 
     public bool AssignTask(int id, int currentUserId, int? newAssignee)
     {
-        TaskItem? task = _tasks.FindBy(id, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(id);
         if (task is null || (task.AssignedTo is not null && task.AssignedTo != currentUserId))
             return false;
 
@@ -182,7 +182,7 @@ class TaskService : ITaskService
 
     public bool CanUserEdit(int taskId, int currentUserId)
     {
-        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(taskId);
         if (task is null)
             return true;
         
@@ -199,7 +199,7 @@ class TaskService : ITaskService
 
     public bool IsBlocked(int taskId)
     {
-        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(taskId);
         if (task is null)
             return false;
 
@@ -215,7 +215,7 @@ class TaskService : ITaskService
 
     public int[] GetBlockingTasksIds(int taskId)
     {
-        TaskItem? task = _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+        TaskItem? task = GetTaskById(taskId);
         if (task is null || task.DependsOn == null || task.DependsOn.Length == 0)
             return Array.Empty<int>();
 
@@ -234,6 +234,46 @@ class TaskService : ITaskService
         
         Array.Resize(ref blockingTasks, pos);
         return blockingTasks;
+    }
+
+    public IMyCollection<TaskItem> GetAllDependencyTasks(int taskId)
+    {
+        
+        TaskItem? task = GetTaskById(taskId);
+        if (task is null || task.DependsOn == null || task.DependsOn.Length == 0)
+            return _collectionFactory.Create<TaskItem>();
+
+        Func<TaskItem, bool> predicate = taskItem =>
+        {
+            for (int i = 0; i < task.DependsOn.Length; i++)
+            {
+                if (task.DependsOn[i] == taskItem.Id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        return _tasks.Filter(predicate);
+    }
+
+    public void RemoveDependency(int taskId, int dependencyTaskId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveAllDependencies(int taskId)
+    {
+        TaskItem? task = GetTaskById(taskId);
+
+        if (task is null)
+            return;
+
+        task.DependsOn = Array.Empty<int>();
+        _tasks.IncreaseDirty();
+        AutoSave();
+
     }
 
     private void AutoSave()
@@ -385,6 +425,11 @@ class TaskService : ITaskService
                  result[pos++] = arr[i];
 
          return result;
+     }
+
+     private TaskItem? GetTaskById(int taskId)
+     {
+         return _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
      }
 
 }
