@@ -218,6 +218,22 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Constructor from iterator
+
+    [Fact]
+    public void ConstructFromIterator_CopiesAllItems()
+    {
+        IMyCollection<T> source = CreateEmpty();
+        source.Add(Item1);
+        source.Add(Item2);
+        source.Add(Item3);
+ 
+        IMyCollection<T> copy = CreateFromIterator(source.GetIterator());
+        Assert.Equal(3, copy.Count);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
