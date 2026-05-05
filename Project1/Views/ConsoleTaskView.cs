@@ -34,7 +34,7 @@ public class ConsoleTaskView : ITaskView
         _taskService = taskService;
         
         _addUpdateTaskMenu = new AddTaskMenu(session, userSelectionView);
-        _removeTaskMenu = new RemoveTaskMenu(displayMapper);
+        _removeTaskMenu = new RemoveTaskMenu(displayMapper, taskService);
         _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
         _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
@@ -61,9 +61,7 @@ public class ConsoleTaskView : ITaskView
                         _taskService.AddTask(newTask);
                     break;
                 case 1:
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskIdToRemove != -1)
-                        _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
+                    _removeTaskMenu.RemoveTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 2:
                     (int id, UpdateTaskModel updatedTask)? taskToUpdate =
@@ -74,7 +72,6 @@ public class ConsoleTaskView : ITaskView
                     break;
                 case 3:
                     _toggleTaskMenu.ToggleTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
-                    
                     break;
                 case 4:
                     (int id, int? assigneeId)? taskAssignment =

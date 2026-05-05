@@ -49,6 +49,7 @@ public class ToggleTaskMenu
                 {
                     ToggleBlockedCanOnlyBeNotStarted(selectedTask);
                 }
+                continue;
             }
 
             if (newStatus != null)
