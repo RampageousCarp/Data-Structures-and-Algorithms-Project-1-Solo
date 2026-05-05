@@ -3,7 +3,6 @@ using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views.Mapping;
 using Project1.Views.Users;
-using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Views;
 
@@ -12,7 +11,7 @@ public class ConsoleTaskView : ITaskView
     private readonly ITaskService _taskService;
     private readonly Session _session;
     private readonly ChoiceMenu _menu;
-    private readonly AddTaskMenu _addUpdateTaskMenu;
+    private readonly AddTaskMenu _addTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
@@ -33,7 +32,7 @@ public class ConsoleTaskView : ITaskView
         _filters = new TaskFilter();
         _taskService = taskService;
         
-        _addUpdateTaskMenu = new AddTaskMenu(session, userSelectionView);
+        _addTaskMenu = new AddTaskMenu(session, taskService, userSelectionView);
         _removeTaskMenu = new RemoveTaskMenu(displayMapper, taskService);
         _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
@@ -56,9 +55,10 @@ public class ConsoleTaskView : ITaskView
             switch (option)
             {
                 case 0:
-                    CreateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
-                    if (newTask is not null)
-                        _taskService.AddTask(newTask);
+                    _addTaskMenu.AddTask();
+                    // CreateTaskModel? newTask = _addTaskMenu.AddTask();
+                    // if (newTask is not null)
+                    //     _taskService.AddTask(newTask);
                     break;
                 case 1:
                     _removeTaskMenu.RemoveTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);

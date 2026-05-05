@@ -1,6 +1,7 @@
 using Project1.Models;
 using Project1.Models.ENums;
 using Project1.Models.ViewModels;
+using Project1.Services.Interfaces;
 using Project1.Views.Users;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
@@ -10,17 +11,19 @@ public class AddTaskMenu
 {
     private readonly ChoiceMenu _menu;
     private readonly UserSelectionView _userSelectionView;
+    private readonly ITaskService _taskService;
     private readonly Session _session;
 
-    public AddTaskMenu(Session session, UserSelectionView userSelectionView)
+    public AddTaskMenu(Session session, ITaskService taskService, UserSelectionView userSelectionView)
     {
         _menu = new ChoiceMenu();
         
         _session = session;
+        _taskService = taskService;
         _userSelectionView = userSelectionView;
     }
     
-    public CreateTaskModel? AddTask()
+    public void AddTask()
     {
         CreateTaskModel newCreateTask = new CreateTaskModel();
         bool dataIncomplete = false;
@@ -64,7 +67,7 @@ public class AddTaskMenu
                     break;
                 case 4:
                     (int id, string name)? assignee = ChooseAssignmentAction();
-                    if (assignee.Value.id == 0)
+                    if (assignee!.Value.id == 0)
                     {
                         newCreateTask.AssignedTo = null;
                         newCreateTask.AssigneeName = assignee.Value.name;
@@ -77,14 +80,17 @@ public class AddTaskMenu
                     break;
                 case 6:
                     if (!IsValid(newCreateTask))
+                    {
                         dataIncomplete = true;
-                    else
-                        return newCreateTask;
-                    break;
+                        continue;
+                    }
+                    
+                    _taskService.AddTask(newCreateTask);
+                    return;
                 case 7:
-                    return null;
+                    return;
                 default:
-                    return null;
+                    return;
             }
         }
     }
