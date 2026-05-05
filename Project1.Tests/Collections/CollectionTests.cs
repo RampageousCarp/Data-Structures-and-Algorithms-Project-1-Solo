@@ -90,6 +90,45 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Filter
+
+    [Fact]
+    public void Filter_MatchingAll_ReturnsAllItems()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+ 
+        IMyCollection<T> filtered = col.Filter(_ => true);
+        Assert.Equal(3, filtered.Count);
+    }
+ 
+    [Fact]
+    public void Filter_MatchingNone_ReturnsEmpty()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+ 
+        IMyCollection<T> filtered = col.Filter(_ => false);
+        Assert.Equal(0, filtered.Count);
+    }
+ 
+    [Fact]
+    public void Filter_MatchingSubset_ReturnsCorrectCount()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+ 
+        IMyCollection<T> filtered = col.Filter(item => item!.Equals(Item1));
+        Assert.Equal(1, filtered.Count);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
