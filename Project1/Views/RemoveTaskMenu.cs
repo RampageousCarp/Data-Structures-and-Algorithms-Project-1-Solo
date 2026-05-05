@@ -7,35 +7,39 @@ namespace Project1.Views;
 
 public class RemoveTaskMenu
 {
-    private ChoiceMenu _menu;
-    private TaskDisplayMapper _displayMapper;
+    private readonly ChoiceMenu _menu;
+    private readonly TaskDisplayMapper _displayMapper;
+    private readonly ITaskService _taskService;
     
-    public RemoveTaskMenu(TaskDisplayMapper mapper)
+    public RemoveTaskMenu(TaskDisplayMapper mapper, ITaskService taskService)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _taskService = taskService;
     }
     
 
-    public int RemoveTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public void RemoveTask(Func<IMyCollection<TaskItem>> getTasksWithFilter, int currentUserId, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
-        
         while (true)
         {
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             int result = -1;
             
             if (menuItems[selectedIndex].IsAction)
-                return -1;
-            
-            if (canEdit(menuItems[selectedIndex].Value!.Id))
-                result = menuItems[selectedIndex].Value!.Id;
-            else
+                return;
+
+            if (!canEdit(menuItems[selectedIndex].Value!.Id))
+            {
                 RemoveBlocked(menuItems[selectedIndex].Value!);
+                continue;
+            }
+            
+            result = menuItems[selectedIndex].Value!.Id;
 
             if (result != -1 && ConfirmRemove(_displayMapper.Map(menuItems[selectedIndex].Value!)))
-                return result;
+                _taskService.RemoveTask(result, currentUserId);
         }
     }
     

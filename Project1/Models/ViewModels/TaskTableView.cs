@@ -12,6 +12,7 @@ public class TaskTableView : IFromTaskItem<TaskTableView>
     public TaskStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateOnly DueTo { get; set; }
+    public int[] DependsOn { get; set; }
     
     public static TaskTableView FromTask(TaskItem task) => new TaskTableView
     {
@@ -20,7 +21,8 @@ public class TaskTableView : IFromTaskItem<TaskTableView>
         Priority = task.Priority,
         Status = task.Status,
         CreatedAt = task.CreatedAt,
-        DueTo = task.DueTo
+        DueTo = task.DueTo,
+        DependsOn = task.DependsOn
     };
 
     public string ToTableId() => $"[ID: {Id}]";
@@ -32,5 +34,7 @@ public class TaskTableView : IFromTaskItem<TaskTableView>
     public string ToTableCreated() => $"Created: {CreatedAt:dd-MM-yyyy}";
     
     public string ToTableDueTo() => $"Due To: {DueTo:dd-MM-yyyy}";
-    
+
+    public string ToTableDependsOn() => $"Depends On: {(DependsOn.Length <= 0 ? "None" : string.Join(", ", DependsOn))}";
+
 }

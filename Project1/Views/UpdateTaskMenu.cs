@@ -11,37 +11,46 @@ namespace Project1.Views;
 public class UpdateTaskMenu
 {
     private readonly ChoiceMenu _menu;
-    private TaskDisplayMapper _displayMapper;
-    private UserSelectionView _userSelectionView;
-    private Func<int, User?> _getUserById;
+    private readonly TaskDisplayMapper _displayMapper;
+    private readonly ITaskService _taskService;
+    private readonly UserSelectionView _userSelectionView;
+    private readonly Func<int, User?> _getUserById;
     
-    public UpdateTaskMenu(TaskDisplayMapper mapper, UserSelectionView userSelectionView, Func<int, User?> getUserById)
+    public UpdateTaskMenu(TaskDisplayMapper mapper, ITaskService taskService, UserSelectionView userSelectionView, Func<int, User?> getUserById)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _taskService = taskService;
         _userSelectionView = userSelectionView;
         _getUserById = getUserById;
     }
     
-    public (int id, UpdateTaskModel updatedTask)? UpdateTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public void UpdateTask(Func<IMyCollection<TaskItem>> getTasksWithFilter, int currentUserId, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
         while (true)
         {
-            (int id, UpdateTaskModel updatedTask)? result = null;
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
-                return null;
-    
-            if (canEdit(menuItems[selectedIndex].Value.Id))
-                result = HandleTaskUpdate(menuItems[selectedIndex].Value!);
-            else
-                UpdateBlocked(menuItems[selectedIndex].Value);
+                return;
+
+            TaskItem selectedTask = menuItems[selectedIndex].Value!;
+
+            if (!canEdit(selectedTask.Id))
+            {
+                UpdateBlocked(selectedTask);
+                continue;
+            }
             
-            if (result.HasValue)
-                return result;
+            UpdateTaskModel? updatedTask = HandleTaskUpdate(selectedTask);
+
+            if (updatedTask is not null)
+            {
+                _taskService.UpdateTask(selectedTask.Id, currentUserId, updatedTask);
+                return;
+            }
         }
     }
     
@@ -72,7 +81,7 @@ public class UpdateTaskMenu
     }
     
     
-    private (int id, UpdateTaskModel updatedTask)? HandleTaskUpdate(TaskItem taskToUpdate)
+    private UpdateTaskModel? HandleTaskUpdate(TaskItem taskToUpdate)
     {
         UpdateTaskModel updatedTask = CreateTaskModelFromDisplay(taskToUpdate);
         bool dataIncomplete = false;
@@ -93,7 +102,7 @@ public class UpdateTaskMenu
                     break;
                 
                 case 2:
-                    updatedTask.Status = EnterStatus();
+                    updatedTask.Status = EnterStatus(taskToUpdate);
                     break;
                 
                 case 3:
@@ -120,13 +129,13 @@ public class UpdateTaskMenu
                     if (!IsValid(updatedTask))
                     {
                         dataIncomplete = true;
-                        break;
+                        continue;
                     }
                     
                     if (ConfirmUpdate(taskToUpdate.Id))
-                        return (taskToUpdate.Id, updatedTask);
+                        return updatedTask;
                     
-                    return null;
+                    continue;
                 
                 default:
                     return null;
@@ -167,7 +176,7 @@ public class UpdateTaskMenu
             Status = task.Status,
             DueTo = task.DueTo,
             AssignedTo = task.AssignedTo,
-            AssigneeName = task.AssignedTo is null ? "Unassigned" : _getUserById(task.AssignedTo.GetValueOrDefault()).Username
+            AssigneeName = task.AssignedTo is null ? "Unassigned" : user!.Username
         };
     }
     
@@ -191,12 +200,22 @@ public class UpdateTaskMenu
         return (TaskPriority)selectedIndex;
     }
     
-    private TaskStatus EnterStatus()
+    private TaskStatus EnterStatus(TaskItem originalTask)
     {
         Console.Clear();
         Console.WriteLine("=== Enter Status ===\n");
 
-        string[] statuses = Enum.GetNames(typeof(TaskStatus));
+        string[] statuses;
+        if (!_taskService.IsBlocked(originalTask.Id))
+            statuses = Enum.GetNames(typeof(TaskStatus));
+        else
+        {
+            if (originalTask.Status == TaskStatus.Done)
+                statuses = [nameof(TaskStatus.NotStarted), nameof(TaskStatus.Done)];
+            else
+                statuses = [nameof(TaskStatus.NotStarted)];
+        }
+            
         int selectedIndex = _menu.GetChoice(statuses);
 
         return (TaskStatus)selectedIndex;

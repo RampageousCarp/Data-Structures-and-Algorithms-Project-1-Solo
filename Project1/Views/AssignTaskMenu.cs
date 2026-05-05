@@ -10,36 +10,43 @@ public class AssignTaskMenu
 {
     private readonly ChoiceMenu _menu;
     private readonly TaskDisplayMapper _displayMapper;
+    private readonly ITaskService _taskService;
     private readonly UserSelectionView _userSelectionView;
     private readonly Func<int, User?> _getUserById;
     
-    public AssignTaskMenu(TaskDisplayMapper mapper, UserSelectionView userSelectionView, Func<int, User?> getUserById)
+    public AssignTaskMenu(TaskDisplayMapper mapper, ITaskService taskService, UserSelectionView userSelectionView, Func<int, User?> getUserById)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _taskService = taskService;
         _userSelectionView = userSelectionView;
         _getUserById = getUserById;
     }
 
-    public (int id, int? assigneeId)? AssignTask(IMyCollection<TaskItem> tasks, int currentUserId, Func<int, bool> canEdit)
+    public void AssignTask(Func<IMyCollection<TaskItem>> getTasksWithFilter, int currentUserId, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
         
         while (true)
         {
-            int? newAssignee = -1;
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
             
             if (menuItems[selectedIndex].IsAction)
-                return null;
-            
-            if (canEdit(menuItems[selectedIndex].Value!.Id))
-                newAssignee = ChooseAssignmentMethod(menuItems[selectedIndex].Value!, currentUserId);
-            else
-                AssignmentBlocked(menuItems[selectedIndex].Value!);
+                return;
 
-            if (newAssignee != -1 && ConfirmAssignment(menuItems[selectedIndex].Value!, newAssignee is null ? null : _getUserById(newAssignee.GetValueOrDefault())))
-                return (menuItems[selectedIndex].Value!.Id, newAssignee);
+            TaskItem selectedTask = menuItems[selectedIndex].Value!;
+
+            if (!canEdit(selectedTask.Id))
+            {
+                AssignmentBlocked(selectedTask);
+                continue;
+            }
+            
+            ChooseAssignmentMethod(menuItems[selectedIndex].Value!, currentUserId);
+
+            // if (newAssignee != -1 && ConfirmAssignment(menuItems[selectedIndex].Value!,
+            //         newAssignee is null ? null : _getUserById(newAssignee.GetValueOrDefault())))
+            //     _taskService.AssignTask(selectedTask.Id, currentUserId, newAssignee);
         }
     }
     
@@ -69,36 +76,59 @@ public class AssignTaskMenu
         return menuItems;
     }
     
-    private int? ChooseAssignmentMethod(TaskItem task, int currentUserId)
+    
+    private void ChooseAssignmentMethod(TaskItem task, int currentUserId)
     {
-        string?[] options;
-        int menuType;
-        if (task.AssignedTo is null)
+        while (true)
         {
-            menuType = 1;
-            options = ["Assign myself", "Assign Task To", null, "Exit"];
-        }
+            string?[] options;
+            int menuType;
+            if (task.AssignedTo is null)
+            {
+                menuType = 1;
+                options = ["Assign myself", "Assign Task To", null, "Exit"];
+            }
 
-        else
-        {
-            menuType = 2;
-            options = ["Unassign myself", "Reassign Task To", null, "Exit"];
-        }
+            else
+            {
+                menuType = 2;
+                options = ["Unassign myself", "Reassign Task To", null, "Exit"];
+            }
 
-        Console.Clear();
-        Console.WriteLine($"=== Choose Assignment Option For #{task.Id} {task.Description} ===\n");
-        int optionChoice = _menu.GetChoice(options);
+            Console.Clear();
+            Console.WriteLine($"=== Choose Assignment Option For #{task.Id} {task.Description} ===\n");
+            int optionChoice = _menu.GetChoice(options);
 
-        switch (menuType, optionChoice)
-        {
-            case (1, 0):
-                return currentUserId;
-            case (1, 1) or (2, 1):
-                return AssignTaskTo();
-            case (2, 0):
-                return null;
-            default:
-                return -1;
+            switch (menuType, optionChoice)
+            {
+                case (1, 0):
+                    if (ConfirmAssignment(task, _getUserById(currentUserId)))
+                    {
+                        _taskService.AssignTask(task.Id, currentUserId, currentUserId);
+                        return;
+                    }
+
+                    continue;
+                case (1, 1) or (2, 1):
+                    int? newAssignee = AssignTaskTo();
+                    if (newAssignee is null || newAssignee == -1)
+                        continue;
+                    if (ConfirmAssignment(task, _getUserById(newAssignee.GetValueOrDefault())))
+                    {
+                        _taskService.AssignTask(task.Id, currentUserId, newAssignee.GetValueOrDefault());
+                        return;
+                    }
+                    continue;
+                case (2, 0):
+                    if (ConfirmAssignment(task, null))
+                    {
+                        _taskService.AssignTask(task.Id, currentUserId, null);
+                        return;
+                    }
+                    continue;
+                default:
+                    return;
+            }
         }
     }
 

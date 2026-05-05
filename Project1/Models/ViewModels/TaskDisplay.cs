@@ -12,6 +12,7 @@ public class TaskDisplay
     public TaskStatus Status { get; set; }
     public DateOnly DueTo { get; set; }
     public string AssigneeName { get; set; } = "Unassigned";
+    public int[] DependsOn { get; set; } = Array.Empty<int>();
 
     public override string ToString()
     {
@@ -20,6 +21,7 @@ public class TaskDisplay
         display += $"Status: {Status}\n";
         display += $"Due To: {DueTo:dd-MM-yyyy}\n";
         display += $"Assigned to: {AssigneeName}\n";
+        display += $"Depends On: {(DependsOn.Length > 0 ? string.Join(", ", DependsOn) : "None")}\n";
         
         return display;
     }

@@ -9,34 +9,51 @@ namespace Project1.Views;
 public class ToggleTaskMenu
 {
     private readonly ChoiceMenu _menu;
-    private TaskDisplayMapper _displayMapper;
+    private readonly TaskDisplayMapper _displayMapper;
+    private readonly ITaskService _taskService;
     
-    public ToggleTaskMenu(TaskDisplayMapper mapper)
+    public ToggleTaskMenu(TaskDisplayMapper mapper, ITaskService taskService)
     {
         _menu = new ChoiceMenu();
         _displayMapper = mapper;
+        _taskService = taskService;
     }
 
-    public (int id, TaskStatus status)? ToggleTask(IMyCollection<TaskItem> tasks, Func<int, bool> canEdit)
+    public void ToggleTask(Func<IMyCollection<TaskItem>> getTasksWithFilter, int currentUserId, Func<int, bool> canEdit)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(tasks);
-        
         while (true)
         {
-            (int id, TaskStatus status)? result = null;
-            TaskStatus? newStatus = null;
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(getTasksWithFilter());
             int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+            TaskStatus? newStatus = null;
             
             if (menuItems[selectedIndex].IsAction)
-                return null;
+                return ;
+
+            TaskItem selectedTask = menuItems[selectedIndex].Value!;
             
-            if (canEdit(menuItems[selectedIndex].Value.Id))
-                newStatus = HandleTaskToggle();
+            if (!canEdit(selectedTask.Id))
+                ToggleBlocked(selectedTask);
             else
-                ToggleBlocked(menuItems[selectedIndex].Value!);
-            
-            if (newStatus is not null)
-                return ((int id, TaskStatus status)?)(menuItems[selectedIndex].Value!.Id, newStatus);
+                newStatus = HandleTaskToggle();
+
+            if (_taskService.IsBlocked(selectedTask.Id))
+            {
+                if (selectedTask.Status < newStatus)
+                {
+                    ToggleBlockedByDependency(selectedTask);
+                    continue;
+                }
+
+                if (selectedTask.Status == TaskStatus.Done && newStatus != TaskStatus.NotStarted)
+                {
+                    ToggleBlockedCanOnlyBeNotStarted(selectedTask);
+                }
+                continue;
+            }
+
+            if (newStatus != null)
+                _taskService.ToggleTask(selectedTask.Id, currentUserId, newStatus.GetValueOrDefault());
         }
     }
     
@@ -93,6 +110,29 @@ public class ToggleTaskMenu
         Console.CursorVisible = false;
         Console.WriteLine($"=== Toggle #{task.Id} {task.Description} ===\n");
         Console.WriteLine("You don't have permission to toggle this task status");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
+    }
+
+    private void ToggleBlockedByDependency(TaskItem task)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Toggle #{task.Id} {task.Description} ===\n");
+        Console.WriteLine($"Task toggling is blocked by dependencies: {string.Join(", ", _taskService.GetBlockingTasksIds(task.Id))}");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
+    }
+    
+    private void ToggleBlockedCanOnlyBeNotStarted(TaskItem task)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Toggle #{task.Id} {task.Description} ===\n");
+        Console.WriteLine($"Task toggling is blocked by dependencies: {string.Join(", ", _taskService.GetBlockingTasksIds(task.Id))}");
+        Console.WriteLine("This task can only be set as NotStarted");
         Console.WriteLine("Press any key to continue");
         Console.ReadKey();
         Console.CursorVisible = true;

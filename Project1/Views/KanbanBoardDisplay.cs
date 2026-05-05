@@ -7,23 +7,31 @@ namespace Project1.Views;
 public class KanbanBoardDisplay
 {
     private readonly IUserService _userService;
+    private readonly ITaskService _taskService;
     private readonly Func<TaskItem, string>[] _fieldExtractors;
     
     private const int TABLE_WIDTH = 162;
     private const int COLUMN_WIDTH = 54;
 
-    public KanbanBoardDisplay(IUserService userService)
+    public KanbanBoardDisplay(IUserService userService, ITaskService taskService)
     {
         _userService = userService;
+        _taskService = taskService;
         
         _fieldExtractors = new Func<TaskItem, string>[]
         {
-            t => t.ConvertTo<TaskTableView>().ToTableId(),
+            t => $"{t.ConvertTo<TaskTableView>().ToTableId()} {(_taskService.IsBlocked(t.Id) ? "[BLOCKED]" : "")}",
             t => t.ConvertTo<TaskTableView>().ToTableDescription(),
             t => t.ConvertTo<TaskTableView>().ToTablePrio(),
             t => t.ConvertTo<TaskTableView>().ToTableDueTo(),
             t => t.ConvertTo<TaskTableView>().ToTableCreated(),
-            t => GetAssigneeString(_userService.GetUserById(t.AssignedTo.GetValueOrDefault()))
+            t => GetAssigneeString(_userService.GetUserById(t.AssignedTo.GetValueOrDefault())),
+            t => t.ConvertTo<TaskTableView>().ToTableDependsOn(),
+            t =>
+            {
+                int[] blocking = _taskService.GetBlockingTasksIds(t.Id);
+                return $"Blocked By: {(blocking.Length > 0 ? string.Join(", ", blocking) : "None")}";
+            }
         };
     }
     

@@ -24,7 +24,8 @@ public class TaskDisplayMapper
             Priority = task.Priority,
             Status = task.Status,
             DueTo = task.DueTo,
-            AssigneeName = user?.Username ?? "Unassigned"
+            AssigneeName = user?.Username ?? "Unassigned",
+            DependsOn = task.DependsOn,
         };
     }
 }

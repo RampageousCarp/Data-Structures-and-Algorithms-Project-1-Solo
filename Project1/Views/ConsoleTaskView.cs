@@ -1,47 +1,45 @@
 using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
-using Project1.Views;
 using Project1.Views.Mapping;
 using Project1.Views.Users;
-using TaskStatus = Project1.Models.ENums.TaskStatus;
+
+namespace Project1.Views;
 
 public class ConsoleTaskView : ITaskView
 {
     private readonly ITaskService _taskService;
-    private readonly IUserService _userService;
     private readonly Session _session;
     private readonly ChoiceMenu _menu;
-    private readonly AddTaskMenu _addUpdateTaskMenu;
+    private readonly AddTaskMenu _addTaskMenu;
     private readonly RemoveTaskMenu _removeTaskMenu;
     private readonly UpdateTaskMenu _updateTaskMenu;
     private readonly ToggleTaskMenu _toggleTaskMenu;
     private readonly AssignTaskMenu _assignTaskMenu;
+    private readonly TaskDependencyManagementMenu _dependencyManagementMenu;
     private readonly KanbanBoardDisplay _boardDisplay;
     private readonly FiltersMenu _filtersMenu;
-    private readonly UserSelectionView _userSelectionView;
-    
-    private readonly TaskDisplayMapper _displayMapper;
-    
+
     private TaskFilter _filters;
     
     public ConsoleTaskView(ITaskService taskService, IUserService userService, Session session)
     {
-        _taskService = taskService;
-        _userService = userService;
-        _session = session;
-        _filters = new TaskFilter();
+        TaskDisplayMapper displayMapper = new TaskDisplayMapper(userService);
+        UserSelectionView userSelectionView = new UserSelectionView(userService);
         
         _menu = new ChoiceMenu();
-        _displayMapper = new TaskDisplayMapper(userService);
-        _userSelectionView = new UserSelectionView(userService);
-        _addUpdateTaskMenu = new AddTaskMenu(session, _userSelectionView);
-        _removeTaskMenu = new RemoveTaskMenu(_displayMapper);
-        _updateTaskMenu = new UpdateTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
-        _toggleTaskMenu = new ToggleTaskMenu(_displayMapper);
-        _assignTaskMenu = new AssignTaskMenu(_displayMapper, _userSelectionView, userService.GetUserById);
-        _boardDisplay = new KanbanBoardDisplay(userService);
-        _filtersMenu = new FiltersMenu(_filters, _userSelectionView, session);
+        _session = session;
+        _filters = new TaskFilter();
+        _taskService = taskService;
+        
+        _addTaskMenu = new AddTaskMenu(session, taskService, userSelectionView);
+        _removeTaskMenu = new RemoveTaskMenu(displayMapper, taskService);
+        _updateTaskMenu = new UpdateTaskMenu(displayMapper, taskService, userSelectionView, userService.GetUserById);
+        _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
+        _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
+        _assignTaskMenu = new AssignTaskMenu(displayMapper, taskService, userSelectionView, userService.GetUserById);
+        _boardDisplay = new KanbanBoardDisplay(userService, taskService);
+        _filtersMenu = new FiltersMenu(_filters, userSelectionView, session);
     }
 
     public void Run()
@@ -57,38 +55,25 @@ public class ConsoleTaskView : ITaskView
             switch (option)
             {
                 case 0:
-                    CreateTaskModel? newTask = _addUpdateTaskMenu.AddTask();
-                    if (newTask is not null)
-                        _taskService.AddTask(newTask);
+                    _addTaskMenu.AddTask();
                     break;
                 case 1:
-                    int taskIdToRemove = _removeTaskMenu.RemoveTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskIdToRemove != -1)
-                        _taskService.RemoveTask(taskIdToRemove, _session.CurrentUser!.Id);
+                    _removeTaskMenu.RemoveTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 2:
-                    (int id, UpdateTaskModel updatedTask)? taskToUpdate =
-                        _updateTaskMenu.UpdateTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskToUpdate is not null && taskToUpdate.Value.id != -1)
-                        _taskService.UpdateTask(taskToUpdate.Value.id, _session.CurrentUser!.Id,
-                            taskToUpdate.Value.updatedTask);
+                    _updateTaskMenu.UpdateTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
+
                     break;
                 case 3:
-                    (int id, TaskStatus status)? taskToToggle =
-                        _toggleTaskMenu.ToggleTask(GetAllTasksFiltered(), CanUserEdit);
-                    if (taskToToggle is not null && taskToToggle.Value.id != -1)
-                        _taskService.ToggleTask(taskToToggle.Value.id, _session.CurrentUser!.Id,
-                            taskToToggle.Value.status);
-                    
+                    _toggleTaskMenu.ToggleTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 4:
-                    (int id, int? assigneeId)? taskAssignment =
-                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), _session.CurrentUser!.Id, CanUserEdit);
-                    if (taskAssignment is not null)
-                        _taskService.AssignTask(taskAssignment.Value.id, _session.CurrentUser!.Id,
-                            taskAssignment.Value.assigneeId);
+                    _assignTaskMenu.AssignTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 5:
+                    _dependencyManagementMenu.ManageDependencies(GetAllTasksFiltered, CanUserEdit);
+                    break;
+                case 6:
                     _filtersMenu.SelectFilters();
                     break;
                 
@@ -108,6 +93,7 @@ public class ConsoleTaskView : ITaskView
             "Update Task",
             "Toggle Task Status",
             "Assign/Reassign Task",
+            "Manage Task Dependencies",
             "Apply filters",
             null,
             "Exit"
