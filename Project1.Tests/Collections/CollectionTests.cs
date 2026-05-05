@@ -234,6 +234,45 @@ public abstract class MyCollectionTests<T>
     }
 
     #endregion
+
+    #region Dirty
+
+    [Fact]
+    public void Dirty_InitiallyFalse()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        Assert.False(col.Dirty);
+    }
+ 
+    [Fact]
+    public void Dirty_AfterAdd_IsTrue()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        Assert.True(col.Dirty);
+    }
+ 
+    [Fact]
+    public void ResetDirty_ClearsDirtyFlag()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.ResetDirty();
+        Assert.False(col.Dirty);
+        Assert.Equal(0, col.GetDirtyCount());
+    }
+ 
+    [Fact]
+    public void IncreaseDirty_IncrementsCount()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.IncreaseDirty();
+        col.IncreaseDirty();
+        Assert.Equal(2, col.GetDirtyCount());
+        Assert.True(col.Dirty);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
