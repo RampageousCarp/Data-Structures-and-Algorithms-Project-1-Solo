@@ -38,7 +38,7 @@ public class ConsoleTaskView : ITaskView
         _updateTaskMenu = new UpdateTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
         _toggleTaskMenu = new ToggleTaskMenu(displayMapper, taskService);
         _dependencyManagementMenu = new TaskDependencyManagementMenu(displayMapper, taskService);
-        _assignTaskMenu = new AssignTaskMenu(displayMapper, userSelectionView, userService.GetUserById);
+        _assignTaskMenu = new AssignTaskMenu(displayMapper, taskService, userSelectionView, userService.GetUserById);
         _boardDisplay = new KanbanBoardDisplay(userService, taskService);
         _filtersMenu = new FiltersMenu(_filters, userSelectionView, session);
     }
@@ -74,11 +74,7 @@ public class ConsoleTaskView : ITaskView
                     _toggleTaskMenu.ToggleTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 4:
-                    (int id, int? assigneeId)? taskAssignment =
-                        _assignTaskMenu.AssignTask(GetAllTasksFiltered(), _session.CurrentUser!.Id, CanUserEdit);
-                    if (taskAssignment is not null)
-                        _taskService.AssignTask(taskAssignment.Value.id, _session.CurrentUser!.Id,
-                            taskAssignment.Value.assigneeId);
+                    _assignTaskMenu.AssignTask(GetAllTasksFiltered, _session.CurrentUser!.Id, CanUserEdit);
                     break;
                 case 5:
                     _dependencyManagementMenu.ManageDependencies(GetAllTasksFiltered, CanUserEdit);
