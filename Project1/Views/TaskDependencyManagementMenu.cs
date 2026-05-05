@@ -85,7 +85,8 @@ public class TaskDependencyManagementMenu
             switch (selectedIndex)
             {
                 case 0:
-                    break;
+                    AddDependency(task);
+                    continue;
                 case 1:
                     RemoveDependency(task);
                     continue;
@@ -102,13 +103,27 @@ public class TaskDependencyManagementMenu
     private void RemoveDependency(TaskItem task)
     {
         MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllDependencyTasks(task.Id));
-        int selectedIndex = DisplayTaskSelectionMenu(menuItems);
+        int selectedIndex = DisplayTaskSelectionMenu(menuItems, "=== Choose Dependency To Remove ===\n\n");
         
         if (menuItems[selectedIndex].IsAction)
             return;
         
         if (ConfirmDependencyRemove(task, menuItems[selectedIndex].Value!))
             _taskService.RemoveDependency(task.Id, menuItems[selectedIndex].Value!.Id);
+    }
+
+    private void AddDependency(TaskItem task)
+    {
+        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
+        int selectedIndex = DisplayTaskSelectionMenu(menuItems, "=== Choose Task To Add Dependency ===\n\n");
+        
+        if (menuItems[selectedIndex].IsAction)
+            return;
+
+        TaskItem chosenTask = menuItems[selectedIndex].Value!;
+        if (_taskService.WouldCreateCycle(task.Id, chosenTask.Id))
+            BlockDependencyDueCircularReference(task, chosenTask);
+
     }
 
     private bool ConfirmAllDependenciesRemove(TaskItem task)
@@ -125,6 +140,17 @@ public class TaskDependencyManagementMenu
         Console.WriteLine($"=== Remove #{dependency.Id} {dependency.Description} As Dependency For #{task.Id} {task.Description} ===\n");
         
         return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+
+    private void BlockDependencyDueCircularReference(TaskItem task, TaskItem dependency)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Adding Dependency #{dependency.Id} {dependency.Description} To Task #{task.Id} {task.Description} ===\n");
+        Console.WriteLine($"#{dependency.Id} {dependency.Description} cannot be added as dependency to the #{task.Id} {task.Description} due to circular reference");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
     }
     
 }

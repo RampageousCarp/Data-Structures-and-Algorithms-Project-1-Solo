@@ -287,6 +287,9 @@ class TaskService : ITaskService
 
     public bool WouldCreateCycle(int taskId, int dependencyId)
     {
+        if (taskId == dependencyId)
+            return true;
+        
         int maxSize = _lastId + 1;
 
         int[] toVisit = new int[maxSize];
