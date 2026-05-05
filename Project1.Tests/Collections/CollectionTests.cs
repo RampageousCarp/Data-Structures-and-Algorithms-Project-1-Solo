@@ -1,10 +1,7 @@
-using Project1.Services;
 using Project1.Services.Collections;
 using Project1.Services.Interfaces;
-using Xunit;
 
-namespace Project1.Tests;
-
+namespace Project1.Tests.Collections;
 
 public abstract class MyCollectionTests<T>
 {
@@ -13,9 +10,29 @@ public abstract class MyCollectionTests<T>
     protected abstract T Item1 { get; }
     protected abstract T Item2 { get; }
     protected abstract T Item3 { get; }
-    
 
-    
+
+    #region Add and Count
+
+    [Fact]
+    public void Add_SingleItem_CountIsOne()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        Assert.Equal(1, col.Count);
+    }
+ 
+    [Fact]
+    public void Add_MultipleItems_CountIsCorrect()
+    {
+        IMyCollection<T> col = CreateEmpty();
+        col.Add(Item1);
+        col.Add(Item2);
+        col.Add(Item3);
+        Assert.Equal(3, col.Count);
+    }
+
+    #endregion
 }
 
 public class MyArrayCollectionTests : MyCollectionTests<int>
