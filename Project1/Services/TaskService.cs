@@ -285,6 +285,22 @@ class TaskService : ITaskService
 
     }
 
+    public void AddDependency(int taskId, int dependencyId)
+    {
+        TaskItem? task = GetTaskById(taskId);
+        TaskItem? dep = GetTaskById(dependencyId);
+        
+        if (task is null || dep is null)
+            return;
+        if (ArrayContains(task.DependsOn, dependencyId) || WouldCreateCycle(taskId, dependencyId))
+            return;
+
+        task.DependsOn = ArrayAppend(task.DependsOn, dependencyId);
+        
+        _tasks.IncreaseDirty();
+        AutoSave();
+    }
+
     public bool WouldCreateCycle(int taskId, int dependencyId)
     {
         if (taskId == dependencyId)
@@ -328,162 +344,207 @@ class TaskService : ITaskService
         return false;
     }
 
-    private void AutoSave()
-        {
-            if (_tasks.GetDirtyCount() >= DIRTY_LIMIT)
-                SaveTasks();
+    public bool AlreadyInDependsOn(int taskId, int dependencyId)
+    {
+        TaskItem? task = GetTaskById(taskId);
+
+        if (task is null)
+            return false;
+
+        return ArrayContains(task.DependsOn, dependencyId);
+
+    }
+
+    public void SetTaskInToDo(int taskId)
+    {
+        TaskItem? task = GetTaskById(taskId);
         
+        if (task is null)
+            return;
+
+        task.Status = TaskStatus.NotStarted;
+        
+        _tasks.IncreaseDirty();
+        AutoSave();
+    }
+
+    private void AutoSave()
+    {
+        if (_tasks.GetDirtyCount() >= DIRTY_LIMIT)
+            SaveTasks();
+    
+    }
+
+    private int LoadLastId(IMyIterator<TaskItem> items)
+    {
+        items.Reset();
+        int lastId = 0;
+        while (items.HasNext())
+        {
+            int currId = items.Next().Id;
+            if (lastId < currId)
+                lastId = currId;
         }
 
-        private int LoadLastId(IMyIterator<TaskItem> items)
-        {
-            items.Reset();
-            int lastId = 0;
-            while (items.HasNext())
-            {
-                int currId = items.Next().Id;
-                if (lastId < currId)
-                    lastId = currId;
-            }
+        return lastId;
+    }
 
-            return lastId;
+    private Func<TaskItem, bool> BuildPredicate(TaskFilter filter)
+    {
+        Func<TaskItem, bool> predicate = _ => true;
+
+        if (filter.Status is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.Status == filter.Status;
         }
     
-        private Func<TaskItem, bool> BuildPredicate(TaskFilter filter)
+        if (filter.Priority is not null)
         {
-            Func<TaskItem, bool> predicate = _ => true;
-
-            if (filter.Status is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.Status == filter.Status;
-            }
-        
-            if (filter.Priority is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.Priority == filter.Priority;
-            }
-        
-            if (filter.DueToFrom is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.DueTo >= filter.DueToFrom;
-            }
-        
-            if (filter.DueToTo is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.DueTo <= filter.DueToTo;
-            }
-        
-            if (filter.CreatedAtFrom is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) >= filter.CreatedAtFrom;
-            }
-        
-            if (filter.CreatedAtTo is not null)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) <= filter.CreatedAtTo;
-            }
-        
-            if (!string.IsNullOrWhiteSpace(filter.Keyword))
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
-            }
-        
-            if (filter.Assignee != 0 && filter.Assignee != -1)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.AssignedTo == filter.Assignee;
-            }
-        
-            if (filter.Assignee == -1)
-            {
-                Func<TaskItem, bool> prev = predicate;
-                predicate = task => prev(task) && task.AssignedTo is null;
-            }
-        
-        
-            return predicate;
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.Priority == filter.Priority;
         }
-
-        private Comparison<TaskItem>? BuildComparison(TaskFilter? filter)
+    
+        if (filter.DueToFrom is not null)
         {
-
-            if (filter is null || !filter.ApplySort)
-                return null;
-         
-            int order = filter.SortOrder == SortOrder.Ascending ? 1 : -1;
-
-            if (filter.SortBy == SortingValue.ID)
-                return (t1, t2) => t1.Id.CompareTo(t2.Id) * order;
-         
-            if (filter.SortBy == SortingValue.Description)
-                return (t1, t2) => String.Compare(t1.Description, t2.Description, StringComparison.Ordinal) * order;
-         
-            if (filter.SortBy == SortingValue.Priority)
-                return (t1, t2) => t1.Priority.CompareTo(t2.Priority) * order;
-         
-            if (filter.SortBy == SortingValue.CreatedAt)
-                return (t1, t2) => t1.CreatedAt.CompareTo(t2.CreatedAt) * order;
-         
-            if (filter.SortBy == SortingValue.DueTo)
-                return (t1, t2) => t1.DueTo.CompareTo(t2.DueTo) * order;
-         
-            if (filter.SortBy == SortingValue.Assignee)
-                return (t1, t2) =>
-                {
-                    var user1 = _userService.GetUserById(t1.AssignedTo.GetValueOrDefault());
-                    var user2 = _userService.GetUserById(t2.AssignedTo.GetValueOrDefault());
-
-                    string name1 = user1?.Username ?? "";
-                    string name2 = user2?.Username ?? "";
-
-                    return string.Compare(name1, name2, StringComparison.Ordinal) * order;
-                };
-
-            return (t1, t2) => t1.Id.CompareTo(t2.Id);
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.DueTo >= filter.DueToFrom;
         }
-
-        private void ClearDependencyReferences(int taskId)
+    
+        if (filter.DueToTo is not null)
         {
-            IMyIterator<TaskItem> iterator = _tasks.GetIterator();
-            iterator.Reset();
-            while (iterator.HasNext())
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.DueTo <= filter.DueToTo;
+        }
+    
+        if (filter.CreatedAtFrom is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) >= filter.CreatedAtFrom;
+        }
+    
+        if (filter.CreatedAtTo is not null)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && DateOnly.FromDateTime(task.CreatedAt) <= filter.CreatedAtTo;
+        }
+    
+        if (!string.IsNullOrWhiteSpace(filter.Keyword))
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.Description.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
+        }
+    
+        if (filter.Assignee != 0 && filter.Assignee != -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo == filter.Assignee;
+        }
+    
+        if (filter.Assignee == -1)
+        {
+            Func<TaskItem, bool> prev = predicate;
+            predicate = task => prev(task) && task.AssignedTo is null;
+        }
+    
+    
+        return predicate;
+    }
+
+    private Comparison<TaskItem>? BuildComparison(TaskFilter? filter)
+    {
+
+        if (filter is null || !filter.ApplySort)
+            return null;
+     
+        int order = filter.SortOrder == SortOrder.Ascending ? 1 : -1;
+
+        if (filter.SortBy == SortingValue.ID)
+            return (t1, t2) => t1.Id.CompareTo(t2.Id) * order;
+     
+        if (filter.SortBy == SortingValue.Description)
+            return (t1, t2) => String.Compare(t1.Description, t2.Description, StringComparison.Ordinal) * order;
+     
+        if (filter.SortBy == SortingValue.Priority)
+            return (t1, t2) => t1.Priority.CompareTo(t2.Priority) * order;
+     
+        if (filter.SortBy == SortingValue.CreatedAt)
+            return (t1, t2) => t1.CreatedAt.CompareTo(t2.CreatedAt) * order;
+     
+        if (filter.SortBy == SortingValue.DueTo)
+            return (t1, t2) => t1.DueTo.CompareTo(t2.DueTo) * order;
+     
+        if (filter.SortBy == SortingValue.Assignee)
+            return (t1, t2) =>
             {
-                TaskItem task = iterator.Next();
-                task.DependsOn = ArrayRemove(task.DependsOn, taskId);
-             
-                _tasks.IncreaseDirty();
-            }
-        }
+                var user1 = _userService.GetUserById(t1.AssignedTo.GetValueOrDefault());
+                var user2 = _userService.GetUserById(t2.AssignedTo.GetValueOrDefault());
 
-        private int[] ArrayRemove(int[] arr, int value)
+                string name1 = user1?.Username ?? "";
+                string name2 = user2?.Username ?? "";
+
+                return string.Compare(name1, name2, StringComparison.Ordinal) * order;
+            };
+
+        return (t1, t2) => t1.Id.CompareTo(t2.Id);
+    }
+
+    private void ClearDependencyReferences(int taskId)
+    {
+        IMyIterator<TaskItem> iterator = _tasks.GetIterator();
+        iterator.Reset();
+        while (iterator.HasNext())
         {
-            int count = 0;
-            for (int i = 0; i < arr.Length; i ++)
-                if (arr[i] == value)
-                    count++;
-
-            if (count == 0)
-                return arr;
-
-            int[] result = new int[arr.Length - count];
-            int pos = 0;
-            for(int i = 0; i < arr.Length; i ++)
-                if (arr[i] != value)
-                    result[pos++] = arr[i];
-
-            return result;
+            TaskItem task = iterator.Next();
+            task.DependsOn = ArrayRemove(task.DependsOn, taskId);
+         
+            _tasks.IncreaseDirty();
         }
+    }
 
-        private TaskItem? GetTaskById(int taskId)
-        {
-            return _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
-        }
+    private bool ArrayContains<T>(T[] arr, T value)
+    {
+        for (int i = 0; i < arr.Length; i++)
+            if (arr[i]!.Equals(value))
+                return true;
+        
+        return false;
+    }
+
+    private T[] ArrayAppend<T>(T[] arr, T value)
+    {
+        T[] result = new T[arr.Length + 1];
+        
+        for (int i = 0; i < arr.Length; i++)
+            result[i] = arr[i];
+        
+        result[arr.Length] = value;
+        
+        return result;
+    }
+
+    private T[] ArrayRemove<T>(T[] arr, T value)
+    {
+        int count = 0;
+        for (int i = 0; i < arr.Length; i ++)
+            if (arr[i]!.Equals(value))
+                count++;
+
+        if (count == 0)
+            return arr;
+
+        T[] result = new T[arr.Length - count];
+        int pos = 0;
+        for(int i = 0; i < arr.Length; i ++)
+            if (!arr[i]!.Equals(value))
+                result[pos++] = arr[i];
+
+        return result;
+    }
+
+    private TaskItem? GetTaskById(int taskId)
+    {
+        return _tasks.FindBy(taskId, (t, key) => t.Id.CompareTo(key));
+    }
 
 }

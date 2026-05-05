@@ -20,5 +20,8 @@ public interface ITaskService
     IMyCollection<TaskItem> GetAllDependencyTasks(int taskId);
     void RemoveDependency(int taskId, int dependencyTaskId);
     void RemoveAllDependencies(int taskId);
+    void AddDependency(int taskId, int dependencyId);
     bool WouldCreateCycle(int taskId, int dependencyId);
+    bool AlreadyInDependsOn(int taskId, int dependencyId);
+    void SetTaskInToDo(int taskId);
 }

@@ -2,6 +2,7 @@ using Project1.Models;
 using Project1.Models.ViewModels;
 using Project1.Services.Interfaces;
 using Project1.Views.Mapping;
+using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Views;
 
@@ -114,16 +115,40 @@ public class TaskDependencyManagementMenu
 
     private void AddDependency(TaskItem task)
     {
-        MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
-        int selectedIndex = DisplayTaskSelectionMenu(menuItems, "=== Choose Task To Add Dependency ===\n\n");
-        
-        if (menuItems[selectedIndex].IsAction)
+        // MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
+
+        while (true)
+        {
+            MenuOption<TaskItem>[] menuItems = BuildTaskSelectionMenuItems(_taskService.GetAllTasksWithFilter(null));
+            int selectedIndex = DisplayTaskSelectionMenu(menuItems, "=== Choose Task To Add Dependency ===\n\n");
+
+            if (menuItems[selectedIndex].IsAction)
+                return;
+
+            TaskItem chosenTask = menuItems[selectedIndex].Value!;
+            if (_taskService.WouldCreateCycle(task.Id, chosenTask.Id))
+            {
+                BlockDependencyDueCircularReference(task, chosenTask);
+                continue;
+            }
+
+            if (_taskService.AlreadyInDependsOn(task.Id, chosenTask.Id))
+            {
+                BlockDependencyAlreadyDepends(task, chosenTask);
+                continue;
+            }
+
+            if (task.Status == TaskStatus.InProgress && !chosenTask.Completed &&
+                ConfirmTaskMoveToTodo(task, chosenTask))
+            {
+                _taskService.AddDependency(task.Id, chosenTask.Id);
+                _taskService.SetTaskInToDo(task.Id);
+                return;
+            }
+            
+            _taskService.AddDependency(task.Id, chosenTask.Id);
             return;
-
-        TaskItem chosenTask = menuItems[selectedIndex].Value!;
-        if (_taskService.WouldCreateCycle(task.Id, chosenTask.Id))
-            BlockDependencyDueCircularReference(task, chosenTask);
-
+        }
     }
 
     private bool ConfirmAllDependenciesRemove(TaskItem task)
@@ -152,5 +177,25 @@ public class TaskDependencyManagementMenu
         Console.ReadKey();
         Console.CursorVisible = true;
     }
+
+    private bool ConfirmTaskMoveToTodo(TaskItem task, TaskItem dependency)
+    {
+        Console.Clear();
+        Console.WriteLine($"=== Task #{dependency.Id} {dependency.Description} Is Not Completed. Task #{task.Id} {task.Description} Will Be Replaced To TODO ===\nContinue?\n");
+        
+        return _menu.GetChoice(["Yes", "No"]) == 0;
+    }
+
+    private void BlockDependencyAlreadyDepends(TaskItem task, TaskItem dependency)
+    {
+        Console.Clear();
+        Console.CursorVisible = false;
+        Console.WriteLine($"=== Adding Dependency #{dependency.Id} {dependency.Description} To Task #{task.Id} {task.Description} ===\n");
+        Console.WriteLine($"#{task.Id} {task.Description} already depends on #{dependency.Id} {dependency.Description}");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+        Console.CursorVisible = true;
+    }
+        
     
 }
