@@ -29,8 +29,11 @@ public class MyBSTCollection<T>: IMyCollection<T>
     #region Methodes
     public virtual void Add(T item)
     {
+        int oldCount = _count;
         _root = InsertNode(_root, item);
-        IncreaseDirty();
+    
+        if (_count > oldCount)
+            IncreaseDirty();
     }
 
     public virtual void Remove(T item)
@@ -45,7 +48,8 @@ public class MyBSTCollection<T>: IMyCollection<T>
 
     public T? FindBy<K>(K key, Func<T, K, int> comparer)
     {
-        return FindInOrder(_root, key, comparer);
+        (bool found, T value) result = FindInOrder(_root, key, comparer);
+        return result.found ? result.value : default;
     }
 
     public virtual IMyCollection<T> Filter(Func<T, bool> predicate)
@@ -120,7 +124,7 @@ public class MyBSTCollection<T>: IMyCollection<T>
     private (Node? node, bool removed) RemoveNode(Node? node, T item)
     {
         if (node == null)
-            return (null, true);
+            return (null, false);
 
         int cmp = _defaultComparison(item, node.Data);
 
@@ -164,17 +168,17 @@ public class MyBSTCollection<T>: IMyCollection<T>
         return curr;
     }
 
-    private T? FindInOrder<K>(Node? node, K key, Func<T, K, int> comparer)
+    private (bool found, T value) FindInOrder<K>(Node? node, K key, Func<T, K, int> comparer)
     {
         if (node == null)
             return default!;
 
-        T? left = FindInOrder(node.Left, key, comparer);
-        if (left is not null)
+        (bool found, T value) left = FindInOrder(node.Left, key, comparer);
+        if (left.found)
             return left;
 
         if (comparer(node.Data, key) == 0)
-            return node.Data;
+            return (true, node.Data);
         
         return FindInOrder(node.Right, key, comparer);
     }

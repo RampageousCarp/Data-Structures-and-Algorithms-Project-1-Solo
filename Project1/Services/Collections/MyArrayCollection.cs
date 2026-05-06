@@ -63,7 +63,7 @@ public class MyArrayCollection<T> : IMyCollection<T>
         
         if (posToDelete != -1)
         {
-            if (posToDelete < _count) 
+            if (posToDelete < _count - 1) 
                 Shift(posToDelete, false);
             _items[-- _count] = default!;
         }
@@ -160,11 +160,11 @@ public class MyArrayCollection<T> : IMyCollection<T>
     private void Shift(int i, bool right = true)
     {
         if (right)
-            for (int index = _count + 1; index >= i; index--)
+            for (int index = _count; index > i; index--)
                 _items[index] = _items[index - 1];
         
         else
-            for (int index = i; index < _count; index ++)
+            for (int index = i; index < _count - 1; index ++)
                 _items[index] = _items[index + 1];
     }
 

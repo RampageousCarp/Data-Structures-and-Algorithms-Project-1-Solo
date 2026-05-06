@@ -200,23 +200,20 @@ public class MyHashMapCollection<T> : IMyCollection<T>
             _count++;
             return true;
         }
-
-        while (current.Next != null)
+        
+        Node? tail = null;
+        while (current != null)
         {
             if (current.Data!.Equals(item))
                 return false;
 
+            tail = current;
             current = current.Next;
         }
 
-        if (!current.Data!.Equals(item))
-        {
-            current.Next = new Node(item!);
-            _count++;
-            return true;
-        }
-
-        return false;
+        tail!.Next = new Node(item!);
+        _count++;
+        return true;
     }
 
     #endregion
