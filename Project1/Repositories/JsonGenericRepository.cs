@@ -42,7 +42,5 @@ public class JsonGenericRepository<T> : IGenericRepository<T>
         }
 
         File.WriteAllText(_filePath, json);
-
-        File.WriteAllText(_filePath, json);
     }
 }
