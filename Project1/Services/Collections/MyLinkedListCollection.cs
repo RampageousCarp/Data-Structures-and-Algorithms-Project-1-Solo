@@ -33,7 +33,7 @@ public class MyLinkedListCollection<T> : IMyCollection<T>
 
     public void Remove(T item)
     {
-        Node? current = _tail;
+        Node? current = _head;
         while (current != null)
         {
             if (current.Data!.Equals(item))

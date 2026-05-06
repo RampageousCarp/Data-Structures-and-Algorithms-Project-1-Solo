@@ -6,7 +6,8 @@ using Project1.Services.Interfaces;
 using TaskStatus = Project1.Models.ENums.TaskStatus;
 
 namespace Project1.Services;
-class TaskService : ITaskService
+
+public class TaskService : ITaskService
 {
     private readonly IGenericRepository<TaskItem> _repository;
     private readonly IMyCollection<TaskItem> _tasks;
