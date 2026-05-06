@@ -307,13 +307,12 @@ public class TaskService : ITaskService
         if (taskId == dependencyId)
             return true;
         
-        int maxSize = _lastId + 1;
-
-        int[] toVisit = new int[maxSize];
-        bool[] visited = new bool[maxSize];
-
+        int queueCapacity = 16; 
+        int[] toVisit = new int[queueCapacity];
         int head = 0, tail = 0;
-
+        
+        bool[] visited = new bool[_lastId + 1];
+        
         toVisit[tail++] = dependencyId;
         visited[dependencyId] = true;
 
@@ -332,12 +331,15 @@ public class TaskService : ITaskService
             for (int i = 0; i < task.DependsOn.Length; i++)
             {
                 int nextId = task.DependsOn[i];
-
-                if (nextId >= 0 && nextId < maxSize && !visited[nextId])
+                
+                if (nextId >= 0 && nextId < visited.Length && !visited[nextId])
                 {
                     visited[nextId] = true;
-                    if (tail < toVisit.Length)
-                        toVisit[tail++] = nextId;
+
+                    if (tail == toVisit.Length)
+                        Array.Resize(ref toVisit, toVisit.Length * 2);
+
+                    toVisit[tail++] = nextId;
                 }
             }
         }

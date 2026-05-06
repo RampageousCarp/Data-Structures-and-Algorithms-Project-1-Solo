@@ -29,8 +29,11 @@ public class MyBSTCollection<T>: IMyCollection<T>
     #region Methodes
     public virtual void Add(T item)
     {
+        int oldCount = _count;
         _root = InsertNode(_root, item);
-        IncreaseDirty();
+    
+        if (_count > oldCount)
+            IncreaseDirty();
     }
 
     public virtual void Remove(T item)
